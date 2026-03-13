@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cash Flow Tracker</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --income: #16a34a;
+            --expense: #dc2626;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 400px; /* Mobile-first width */
+        }
+        h2 { text-align: center; margin-bottom: 20px; }
+        
+        .dashboard {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .dashboard h1 { font-size: 2.5em; margin: 10px 0; }
+        .summary { display: flex; justify-content: space-between; margin-top: 15px; }
+        .summary div { width: 48%; padding: 10px; border-radius: 8px; background: var(--bg); }
+        .money-plus { color: var(--income); font-weight: bold; font-size: 1.2em;}
+        .money-minus { color: var(--expense); font-weight: bold; font-size: 1.2em;}
+
+        form {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .form-control { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 500; }
+        input, select {
+            width: 100%; padding: 10px; border: 1px solid #cbd5e1;
+            border-radius: 6px; box-sizing: border-box; font-size: 16px;
+        }
+        button {
+            width: 100%; background: var(--primary); color: white;
+            padding: 12px; border: none; border-radius: 6px;
+            font-size: 16px; font-weight: bold; cursor: pointer;
+        }
+        button:hover { background: #1d4ed8; }
+
+        .list { list-style-type: none; padding: 0; margin: 0; }
+        .list li {
+            background: var(--card-bg);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            padding: 15px; border-radius: 8px; margin-bottom: 10px;
+            display: flex; justify-content: space-between;
+            border-left: 5px solid;
+            position: relative;
+        }
+        .list li.plus { border-left-color: var(--income); }
+        .list li.minus { border-left-color: var(--expense); }
+        .delete-btn {
+            cursor: pointer; background: #ff4d4d; color: white; border: none;
+            padding: 5px 10px; border-radius: 4px; font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Cash Flow Tracker</h2>
+
+    <div class="dashboard">
+        <h4>YOUR BALANCE</h4>
+        <h1 id="balance">$0.00</h1>
+        <div class="summary">
+            <div>
+                <h4>INCOME</h4>
+                <p id="money-plus" class="money-plus">+$0.00</p>
+            </div>
+            <div>
+                <h4>EXPENSES</h4>
+                <p id="money-minus" class="money-minus">-$0.00</p>
+            </div>
+        </div>
+    </div>
+
+    <form id="form">
+        <div class="form-control">
+            <label for="text">Description</label>
+            <input type="text" id="text" placeholder="e.g. Salary, Groceries..." required />
+        </div>
+        <div class="form-control">
+            <label for="type">Type</label>
+            <select id="type">
+                <option value="expense">Expense</option>
+                <option value="income">Income</option>
+            </select>
+        </div>
+        <div class="form-control">
+            <label for="amount">Amount</label>
+            <input type="number" id="amount" placeholder="Enter amount..." step="0.01" required />
+        </div>
+        <button type="submit">Add Transaction</button>
+    </form>
+
+    <h3>Recent History</h3>
+    <ul id="list" class="list"></ul>
+</div>
+
+<script>
+    const balance = document.getElementById('balance');
+    const money_plus = document.getElementById('money-plus');
+    const money_minus = document.getElementById('money-minus');
+    const list = document.getElementById('list');
+    const form = document.getElementById('form');
+    const text = document.getElementById('text');
+    const amount = document.getElementById('amount');
+    const type = document.getElementById('type');
+
+    // Pull data from browser storage or start empty
+    const localStorageTransactions = JSON.parse(localStorage.getItem('transactions'));
+    let transactions = localStorage.getItem('transactions') !== null ? localStorageTransactions : [];
+
+    // Add transaction
+    function addTransaction(e) {
+        e.preventDefault();
+        const transaction = {
+            id: generateID(),
+            text: text.value,
+            amount: type.value === 'expense' ? -Math.abs(amount.value) : Math.abs(amount.value)
+        };
+        transactions.push(transaction);
+        addTransactionDOM(transaction);
+        updateValues();
+        updateLocalStorage();
+        text.value = '';
+        amount.value = '';
+    }
+
+    // Generate random ID
+    function generateID() { return Math.floor(Math.random() * 100000000); }
+
+    // Add transactions to DOM list
+    function addTransactionDOM(transaction) {
+        const sign = transaction.amount < 0 ? '-' : '+';
+        const item = document.createElement('li');
+        item.classList.add(transaction.amount < 0 ? 'minus' : 'plus');
+        item.innerHTML = `
+            ${transaction.text} <span>${sign}$${Math.abs(transaction.amount).toFixed(2)}</span>
+            <button class="delete-btn" onclick="removeTransaction(${transaction.id})">X</button>
+        `;
+        list.appendChild(item);
+    }
+
+    // Update the balance, income and expense
+    function updateValues() {
+        const amounts = transactions.map(transaction => transaction.amount);
+        const total = amounts.reduce((acc, item) => (acc += item), 0).toFixed(2);
+        const income = amounts.filter(item => item > 0).reduce((acc, item) => (acc += item), 0).toFixed(2);
+        const expense = (amounts.filter(item => item < 0).reduce((acc, item) => (acc += item), 0) * -1).toFixed(2);
+
+        balance.innerText = `$${total}`;
+        money_plus.innerText = `+$${income}`;
+        money_minus.innerText = `-$${expense}`;
+    }
+
+    // Remove transaction by ID
+    window.removeTransaction = function(id) {
+        transactions = transactions.filter(transaction => transaction.id !== id);
+        updateLocalStorage();
+        init();
+    }
+
+    // Update local storage transactions
+    function updateLocalStorage() {
+        localStorage.setItem('transactions', JSON.stringify(transactions));
+    }
+
+    // Init app
+    function init() {
+        list.innerHTML = '';
+        transactions.forEach(addTransactionDOM);
+        updateValues();
+    }
+
+    init();
+    form.addEventListener('submit', addTransaction);
+</script>
+
+</body>
+</html>
