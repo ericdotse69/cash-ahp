@@ -3,204 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cash Flow Tracker</title>
+    <title>Pro Cash Flow Tracker</title>
     <style>
-        :root {
-            --primary: #2563eb;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text: #1e293b;
-            --income: #16a34a;
-            --expense: #dc2626;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
-        .container {
-            width: 100%;
-            max-width: 400px; /* Mobile-first width */
-        }
-        h2 { text-align: center; margin-bottom: 20px; }
-        
-        .dashboard {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .dashboard h1 { font-size: 2.5em; margin: 10px 0; }
-        .summary { display: flex; justify-content: space-between; margin-top: 15px; }
-        .summary div { width: 48%; padding: 10px; border-radius: 8px; background: var(--bg); }
-        .money-plus { color: var(--income); font-weight: bold; font-size: 1.2em;}
-        .money-minus { color: var(--expense); font-weight: bold; font-size: 1.2em;}
-
-        form {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-        .form-control { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: 500; }
-        input, select {
-            width: 100%; padding: 10px; border: 1px solid #cbd5e1;
-            border-radius: 6px; box-sizing: border-box; font-size: 16px;
-        }
-        button {
-            width: 100%; background: var(--primary); color: white;
-            padding: 12px; border: none; border-radius: 6px;
-            font-size: 16px; font-weight: bold; cursor: pointer;
-        }
-        button:hover { background: #1d4ed8; }
-
-        .list { list-style-type: none; padding: 0; margin: 0; }
-        .list li {
-            background: var(--card-bg);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            padding: 15px; border-radius: 8px; margin-bottom: 10px;
-            display: flex; justify-content: space-between;
-            border-left: 5px solid;
-            position: relative;
-        }
-        .list li.plus { border-left-color: var(--income); }
-        .list li.minus { border-left-color: var(--expense); }
-        .delete-btn {
-            cursor: pointer; background: #ff4d4d; color: white; border: none;
-            padding: 5px 10px; border-radius: 4px; font-size: 12px;
-        }
+        :root { --primary: #2563eb; --bg: #f8fafc; --card-bg: #ffffff; --text: #1e293b; --income: #16a34a; --expense: #dc2626; }
+        body { font-family: sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 450px; }
+        .dashboard, form, .history-container { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h1 { font-size: 2em; margin: 10px 0; text-align: center;}
+        .summary { display: flex; justify-content: space-between; }
+        .summary div { width: 48%; text-align: center; padding: 10px; background: var(--bg); border-radius: 8px; }
+        .form-control { margin-bottom: 12px; }
+        input, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-add { background: var(--primary); color: white; }
+        .btn-export { background: #64748b; color: white; margin-top: 20px; }
+        .list { list-style: none; padding: 0; }
+        .list li { background: #fff; border: 1px solid #e2e8f0; padding: 10px; margin-bottom: 8px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid; }
+        .plus { border-left-color: var(--income); }
+        .minus { border-left-color: var(--expense); }
+        .date-label { font-size: 0.75rem; color: #64748b; display: block; }
+        .filter-section { border-top: 1px solid #e2e8f0; padding-top: 15px; margin-top: 15px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Cash Flow Tracker</h2>
-
+    <h2>Cash Flow Pro</h2>
+    
     <div class="dashboard">
-        <h4>YOUR BALANCE</h4>
+        <h4>TOTAL BALANCE</h4>
         <h1 id="balance">$0.00</h1>
         <div class="summary">
-            <div>
-                <h4>INCOME</h4>
-                <p id="money-plus" class="money-plus">+$0.00</p>
-            </div>
-            <div>
-                <h4>EXPENSES</h4>
-                <p id="money-minus" class="money-minus">-$0.00</p>
-            </div>
+            <div><h4>INCOME</h4><p id="money-plus" style="color:var(--income)">+$0.00</p></div>
+            <div><h4>EXPENSE</h4><p id="money-minus" style="color:var(--expense)">-$0.00</p></div>
         </div>
     </div>
 
     <form id="form">
+        <div class="form-control"><label>Description</label><input type="text" id="text" placeholder="Salary, Rent..." required></div>
+        <div class="form-control"><label>Amount</label><input type="number" id="amount" step="0.01" required></div>
+        <div class="form-control"><label>Date & Time of Record</label><input type="datetime-local" id="date" required></div>
         <div class="form-control">
-            <label for="text">Description</label>
-            <input type="text" id="text" placeholder="e.g. Salary, Groceries..." required />
+            <label>Type</label>
+            <select id="type"><option value="expense">Expense</option><option value="income">Income</option></select>
         </div>
-        <div class="form-control">
-            <label for="type">Type</label>
-            <select id="type">
-                <option value="expense">Expense</option>
-                <option value="income">Income</option>
-            </select>
-        </div>
-        <div class="form-control">
-            <label for="amount">Amount</label>
-            <input type="number" id="amount" placeholder="Enter amount..." step="0.01" required />
-        </div>
-        <button type="submit">Add Transaction</button>
+        <button class="btn-add">Save Transaction</button>
     </form>
 
-    <h3>Recent History</h3>
-    <ul id="list" class="list"></ul>
+    <div class="history-container">
+        <h3>History</h3>
+        <div class="filter-section">
+            <label>View Records for Specific Day:</label>
+            <input type="date" id="filter-date" onchange="filterTransactions()">
+        </div>
+        <ul id="list" class="list"></ul>
+        <button class="btn-export" onclick="exportToCSV()">Export All to Excel (CSV)</button>
+    </div>
 </div>
 
 <script>
-    const balance = document.getElementById('balance');
-    const money_plus = document.getElementById('money-plus');
-    const money_minus = document.getElementById('money-minus');
     const list = document.getElementById('list');
     const form = document.getElementById('form');
-    const text = document.getElementById('text');
-    const amount = document.getElementById('amount');
-    const type = document.getElementById('type');
+    let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 
-    // Pull data from browser storage or start empty
-    const localStorageTransactions = JSON.parse(localStorage.getItem('transactions'));
-    let transactions = localStorage.getItem('transactions') !== null ? localStorageTransactions : [];
+    // Automatically set the date input to "Right Now" when page loads
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('date').value = now.toISOString().slice(0, 16);
 
-    // Add transaction
     function addTransaction(e) {
         e.preventDefault();
         const transaction = {
-            id: generateID(),
-            text: text.value,
-            amount: type.value === 'expense' ? -Math.abs(amount.value) : Math.abs(amount.value)
+            id: Date.now(),
+            text: document.getElementById('text').value,
+            amount: document.getElementById('type').value === 'expense' ? -Math.abs(document.getElementById('amount').value) : Math.abs(document.getElementById('amount').value),
+            date: document.getElementById('date').value // Saves the specific date/time chosen
         };
         transactions.push(transaction);
-        addTransactionDOM(transaction);
-        updateValues();
-        updateLocalStorage();
-        text.value = '';
-        amount.value = '';
+        updateUI();
+        form.reset();
+        // Reset date to now for next entry
+        document.getElementById('date').value = new Date().toISOString().slice(0, 16);
     }
 
-    // Generate random ID
-    function generateID() { return Math.floor(Math.random() * 100000000); }
+    function updateUI(filtered = transactions) {
+        list.innerHTML = '';
+        let inc = 0, exp = 0;
+        
+        // Sort transactions so the newest date is always at the top
+        filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(t => {
+            const item = document.createElement('li');
+            item.classList.add(t.amount < 0 ? 'minus' : 'plus');
+            
+            // Format date for display
+            const dateObj = new Date(t.date);
+            const displayDate = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
-    // Add transactions to DOM list
-    function addTransactionDOM(transaction) {
-        const sign = transaction.amount < 0 ? '-' : '+';
-        const item = document.createElement('li');
-        item.classList.add(transaction.amount < 0 ? 'minus' : 'plus');
-        item.innerHTML = `
-            ${transaction.text} <span>${sign}$${Math.abs(transaction.amount).toFixed(2)}</span>
-            <button class="delete-btn" onclick="removeTransaction(${transaction.id})">X</button>
-        `;
-        list.appendChild(item);
-    }
-
-    // Update the balance, income and expense
-    function updateValues() {
-        const amounts = transactions.map(transaction => transaction.amount);
-        const total = amounts.reduce((acc, item) => (acc += item), 0).toFixed(2);
-        const income = amounts.filter(item => item > 0).reduce((acc, item) => (acc += item), 0).toFixed(2);
-        const expense = (amounts.filter(item => item < 0).reduce((acc, item) => (acc += item), 0) * -1).toFixed(2);
-
-        balance.innerText = `$${total}`;
-        money_plus.innerText = `+$${income}`;
-        money_minus.innerText = `-$${expense}`;
-    }
-
-    // Remove transaction by ID
-    window.removeTransaction = function(id) {
-        transactions = transactions.filter(transaction => transaction.id !== id);
-        updateLocalStorage();
-        init();
-    }
-
-    // Update local storage transactions
-    function updateLocalStorage() {
+            item.innerHTML = `<div><span class="date-label">${displayDate}</span><strong>${t.text}</strong></div> <span>$${Math.abs(t.amount).toFixed(2)}</span>`;
+            list.appendChild(item);
+            if(t.amount > 0) inc += t.amount; else exp += Math.abs(t.amount);
+        });
+        
+        document.getElementById('balance').innerText = `$${(inc - exp).toFixed(2)}`;
+        document.getElementById('money-plus').innerText = `+$${inc.toFixed(2)}`;
+        document.getElementById('money-minus').innerText = `-$${exp.toFixed(2)}`;
         localStorage.setItem('transactions', JSON.stringify(transactions));
     }
 
-    // Init app
-    function init() {
-        list.innerHTML = '';
-        transactions.forEach(addTransactionDOM);
-        updateValues();
+    function filterTransactions() {
+        const selectedDate = document.getElementById('filter-date').value;
+        if(!selectedDate) {
+            updateUI(); // Show all if filter is cleared
+        } else {
+            const filtered = transactions.filter(t => t.date.startsWith(selectedDate));
+            updateUI(filtered);
+        }
     }
 
-    init();
-    form.addEventListener('submit', addTransaction);
-</script>
+    function exportToCSV() {
+        if(transactions.length === 0) return alert('No records to export!');
+        let csv = 'Date,Time,Description,Amount,Type\n';
+        transactions.forEach(t => {
+            const d = new Date(t.date);
+            const date = d.toLocaleDateString();
+            const time = d.toLocaleTimeString();
+            const type = t.amount > 0 ? 'Income' : 'Expense';
+            csv += `${date},${time},${t.text},${Math.abs(t.amount)},${type}\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `CashFlow_Export_${new Date().toLocaleDateString()}.csv`;
+        a.click();
+    }
 
+    form.addEventListener('submit', addTransaction);
+    updateUI();
+</script>
 </body>
 </html>
