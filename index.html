@@ -9,26 +9,29 @@
         body { font-family: sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; }
         .container { width: 100%; max-width: 450px; }
         .dashboard, form, .history-container { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        h1 { font-size: 2em; margin: 10px 0; text-align: center;}
+        h1 { font-size: 2.2em; margin: 10px 0; text-align: center;}
         .summary { display: flex; justify-content: space-between; }
         .summary div { width: 48%; text-align: center; padding: 10px; background: var(--bg); border-radius: 8px; }
         .form-control { margin-bottom: 12px; }
-        input, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        input, select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
+        button { width: 100%; padding: 14px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; transition: opacity 0.2s; }
+        button:active { opacity: 0.8; }
         .btn-add { background: var(--primary); color: white; }
         .btn-export { background: #64748b; color: white; margin-top: 20px; }
         .list { list-style: none; padding: 0; }
-        .list li { background: #fff; border: 1px solid #e2e8f0; padding: 10px; margin-bottom: 8px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid; }
+        .list li { background: #fff; border: 1px solid #e2e8f0; padding: 12px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 6px solid; }
         .plus { border-left-color: var(--income); }
         .minus { border-left-color: var(--expense); }
-        .date-label { font-size: 0.75rem; color: #64748b; display: block; }
+        .details { display: flex; align-items: center; gap: 12px; }
+        .icon-circle { background: #f1f5f9; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .date-label { font-size: 0.7rem; color: #64748b; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
         .filter-section { border-top: 1px solid #e2e8f0; padding-top: 15px; margin-top: 15px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Cash Flow Pro</h2>
+    <h2>Cash Flow Pro 🚀</h2>
     
     <div class="dashboard">
         <h4>TOTAL BALANCE</h4>
@@ -40,9 +43,21 @@
     </div>
 
     <form id="form">
-        <div class="form-control"><label>Description</label><input type="text" id="text" placeholder="Salary, Rent..." required></div>
-        <div class="form-control"><label>Amount</label><input type="number" id="amount" step="0.01" required></div>
-        <div class="form-control"><label>Date & Time of Record</label><input type="datetime-local" id="date" required></div>
+        <div class="form-control"><label>Description</label><input type="text" id="text" placeholder="Lunch, Project Payment..." required></div>
+        <div class="form-control"><label>Amount</label><input type="number" id="amount" step="0.01" placeholder="0.00" required></div>
+        <div class="form-control">
+            <label>Category</label>
+            <select id="category">
+                <option value="General">📦 General</option>
+                <option value="Food">🍔 Food & Drink</option>
+                <option value="Salary">💰 Salary / Income</option>
+                <option value="Transport">🚗 Transport</option>
+                <option value="Rent">🏠 Rent / Bills</option>
+                <option value="Entertainment">🎬 Entertainment</option>
+                <option value="Shopping">🛍️ Shopping</option>
+            </select>
+        </div>
+        <div class="form-control"><label>Date & Time</label><input type="datetime-local" id="date" required></div>
         <div class="form-control">
             <label>Type</label>
             <select id="type"><option value="expense">Expense</option><option value="income">Income</option></select>
@@ -53,11 +68,11 @@
     <div class="history-container">
         <h3>History</h3>
         <div class="filter-section">
-            <label>View Records for Specific Day:</label>
+            <label>Filter by Date:</label>
             <input type="date" id="filter-date" onchange="filterTransactions()">
         </div>
         <ul id="list" class="list"></ul>
-        <button class="btn-export" onclick="exportToCSV()">Export All to Excel (CSV)</button>
+        <button class="btn-export" onclick="exportToCSV()">Export to Excel (CSV)</button>
     </div>
 </div>
 
@@ -66,10 +81,17 @@
     const form = document.getElementById('form');
     let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 
-    // Automatically set the date input to "Right Now" when page loads
-    const now = new Date();
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-    document.getElementById('date').value = now.toISOString().slice(0, 16);
+    const catIcons = {
+        "General": "📦", "Food": "🍔", "Salary": "💰", 
+        "Transport": "🚗", "Rent": "🏠", "Entertainment": "🎬", "Shopping": "🛍️"
+    };
+
+    function setNow() {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('date').value = now.toISOString().slice(0, 16);
+    }
+    setNow();
 
     function addTransaction(e) {
         e.preventDefault();
@@ -77,29 +99,37 @@
             id: Date.now(),
             text: document.getElementById('text').value,
             amount: document.getElementById('type').value === 'expense' ? -Math.abs(document.getElementById('amount').value) : Math.abs(document.getElementById('amount').value),
-            date: document.getElementById('date').value // Saves the specific date/time chosen
+            category: document.getElementById('category').value,
+            date: document.getElementById('date').value
         };
         transactions.push(transaction);
         updateUI();
         form.reset();
-        // Reset date to now for next entry
-        document.getElementById('date').value = new Date().toISOString().slice(0, 16);
+        setNow();
     }
 
     function updateUI(filtered = transactions) {
         list.innerHTML = '';
         let inc = 0, exp = 0;
         
-        // Sort transactions so the newest date is always at the top
         filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(t => {
             const item = document.createElement('li');
             item.classList.add(t.amount < 0 ? 'minus' : 'plus');
             
-            // Format date for display
             const dateObj = new Date(t.date);
             const displayDate = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            const icon = catIcons[t.category] || "📦";
 
-            item.innerHTML = `<div><span class="date-label">${displayDate}</span><strong>${t.text}</strong></div> <span>$${Math.abs(t.amount).toFixed(2)}</span>`;
+            item.innerHTML = `
+                <div class="details">
+                    <div class="icon-circle">${icon}</div>
+                    <div>
+                        <span class="date-label">${displayDate}</span>
+                        <strong>${t.text}</strong>
+                    </div>
+                </div> 
+                <span style="font-weight:bold">$${Math.abs(t.amount).toFixed(2)}</span>
+            `;
             list.appendChild(item);
             if(t.amount > 0) inc += t.amount; else exp += Math.abs(t.amount);
         });
@@ -112,29 +142,20 @@
 
     function filterTransactions() {
         const selectedDate = document.getElementById('filter-date').value;
-        if(!selectedDate) {
-            updateUI(); // Show all if filter is cleared
-        } else {
-            const filtered = transactions.filter(t => t.date.startsWith(selectedDate));
-            updateUI(filtered);
-        }
+        updateUI(selectedDate ? transactions.filter(t => t.date.startsWith(selectedDate)) : transactions);
     }
 
     function exportToCSV() {
         if(transactions.length === 0) return alert('No records to export!');
-        let csv = 'Date,Time,Description,Amount,Type\n';
+        let csv = 'Date,Time,Category,Description,Amount,Type\n';
         transactions.forEach(t => {
             const d = new Date(t.date);
-            const date = d.toLocaleDateString();
-            const time = d.toLocaleTimeString();
-            const type = t.amount > 0 ? 'Income' : 'Expense';
-            csv += `${date},${time},${t.text},${Math.abs(t.amount)},${type}\n`;
+            csv += `${d.toLocaleDateString()},${d.toLocaleTimeString()},${t.category},${t.text},${Math.abs(t.amount)},${t.amount > 0 ? 'Income' : 'Expense'}\n`;
         });
         const blob = new Blob([csv], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url;
-        a.download = `CashFlow_Export_${new Date().toLocaleDateString()}.csv`;
+        a.href = window.URL.createObjectURL(blob);
+        a.download = `CashFlow_Export.csv`;
         a.click();
     }
 
