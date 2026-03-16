@@ -47,12 +47,21 @@
         .pin-input { width: 100%; padding: 15px; margin: 20px 0; background: #000; border: 1px solid var(--primary); color: var(--primary); font-size: 24px; text-align: center; letter-spacing: 10px; outline: none; }
         #pin-error { color: var(--expense); font-size: 0.8rem; display: none; margin-bottom: 15px; font-weight: bold; }
 
+        /* BLACK BOX VAULT STYLING */
+        .vault-container { background: #000; padding: 20px; border: 1px dashed var(--expense); margin-bottom: 20px; text-align: center; }
+        .vault-title { color: #94a3b8; font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 15px; display: block; font-weight: bold; }
+        .btn-vault { background: transparent; color: #eab308; border: 1px solid #eab308; padding: 12px; width: 48%; font-size: 0.7rem; cursor: pointer; transition: 0.3s; display: inline-block; }
+        .btn-vault:hover { background: rgba(234, 179, 8, 0.1); }
+        .btn-vault-danger { color: var(--expense); border-color: var(--expense); width: 100%; margin-top: 15px; }
+        .btn-vault-danger:hover { background: rgba(244, 63, 94, 0.1); }
+
         /* THEME: DAYLIGHT PROTOCOL */
         body.daylight { --bg: #e2e8f0; --card-bg: #ffffff; --text: #0f172a; --primary: #0284c7; --border: #cbd5e1; }
         body.daylight input, body.daylight select { background: #f8fafc; color: #0f172a; }
         body.daylight .progress-container, body.daylight .stat-bar-bg { background: #cbd5e1; }
         body.daylight .list li { background: #ffffff; }
         body.daylight .status-badge { background: #e2e8f0; color: var(--primary); }
+        body.daylight .vault-container { background: #f8fafc; }
         .theme-toggle { position: absolute; top: 0; right: 0; background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; cursor: pointer; font-size: 0.7rem; font-weight: bold; width: auto; letter-spacing: 1px; }
         .theme-toggle:hover { background: var(--primary); color: var(--bg); }
     </style>
@@ -81,7 +90,7 @@
         
         <div class="stats-container" id="category-stats">
             <label style="margin-bottom:10px; display:block;">ALLOCATION DATA</label>
-            </div>
+        </div>
 
         <div class="summary">
             <div><label>INFLOW</label><p id="money-plus" style="color:var(--income); margin: 5px 0;">+$0.00</p></div>
@@ -107,6 +116,7 @@
         <div class="form-control"><label>Type</label><select id="type"><option value="expense">EXPENSE</option><option value="income">INCOME</option></select></div>
         <button class="btn-add">Execute Record</button>
     </form>
+    
     <div class="history-container">
         <label>SYSTEM VIEW RANGE</label>
         <select id="time-range" onchange="filterTransactions()" style="margin-bottom: 10px; border-color: var(--primary);">
@@ -119,9 +129,19 @@
         <input type="date" id="filter-date" onchange="setDailyMode()" style="margin-bottom: 20px;">
         <ul id="list" class="list"></ul>
         <button class="btn-export" onclick="exportToCSV()">Export Data (CSV)</button>
-        <button class="btn-reset" onclick="purgeSystem()">Purge All Data</button>
+        <button class="btn-reset" onclick="purgeSystem()">Purge Active Data</button>
+    </div>
+
+    <div class="vault-container">
+        <span class="vault-title">DEEP VAULT (BLACK BOX BACKUP)</span>
+        <div style="display: flex; justify-content: space-between;">
+            <button class="btn-vault" onclick="backupToVault()">SYNC SECURELY</button>
+            <button class="btn-vault" onclick="restoreFromVault()">RESTORE DATA</button>
+        </div>
+        <button class="btn-vault btn-vault-danger" onclick="wipeVault()">DESTROY BLACK BOX</button>
     </div>
 </div>
+
 <script>
     // --- OFFLINE SERVICE WORKER ---
     if ('serviceWorker' in navigator) {
@@ -132,7 +152,7 @@
     }
 
     // --- SECURITY PROTOCOL ---
-    const SECRET_PIN = "0000"; // Default PIN
+    const SECRET_PIN = "0000"; 
     function unlockSystem() {
         const enteredPin = document.getElementById('pin-input').value;
         if (enteredPin === SECRET_PIN) {
@@ -180,7 +200,44 @@
 
     function addTransaction(e) { e.preventDefault(); transactions.push({ id: Date.now(), text: document.getElementById('text').value.toUpperCase(), amount: document.getElementById('type').value === 'expense' ? -Math.abs(document.getElementById('amount').value) : Math.abs(document.getElementById('amount').value), category: document.getElementById('category').value, date: document.getElementById('date').value }); form.reset(); setNow(); filterTransactions(); }
     function removeTransaction(id) { transactions = transactions.filter(t => t.id !== id); filterTransactions(); }
-    function purgeSystem() { if (confirm("Proceed with System Purge? All data will be lost.")) { transactions = []; localStorage.removeItem('transactions'); updateUI(); } }
+    
+    function purgeSystem() { 
+        if (confirm("Purge Active Data? (Note: Vault data will remain safe).")) { 
+            transactions = []; 
+            localStorage.removeItem('transactions'); 
+            updateUI(); 
+        } 
+    }
+
+    // --- DEEP VAULT PROTOCOL (REDUNDANCY) ---
+    function backupToVault() {
+        if (transactions.length === 0) {
+            alert("SYSTEM ERROR: NO DATA TO SECURE.");
+            return;
+        }
+        localStorage.setItem('black_box_vault', JSON.stringify(transactions));
+        alert("SUCCESS: DATA SNAPSHOT SECURED IN DEEP VAULT.");
+    }
+
+    function restoreFromVault() {
+        const vaultData = localStorage.getItem('black_box_vault');
+        if (vaultData) {
+            if (confirm("OVERRIDE ACTIVE SCREEN WITH VAULT DATA?")) {
+                transactions = JSON.parse(vaultData);
+                updateUI();
+                alert("SYSTEM RESTORED FROM DEEP VAULT.");
+            }
+        } else {
+            alert("SYSTEM ERROR: DEEP VAULT IS EMPTY.");
+        }
+    }
+
+    function wipeVault() {
+        if (confirm("CRITICAL WARNING: DESTROY DEEP VAULT? This cannot be undone.")) {
+            localStorage.removeItem('black_box_vault');
+            alert("DEEP VAULT HAS BEEN WIPED.");
+        }
+    }
 
     function updateUI(filtered = transactions, label = "ALL-TIME") {
         list.innerHTML = ''; let inc = 0, exp = 0; 
@@ -205,7 +262,6 @@
         document.getElementById('money-minus').innerText = `-$${exp.toFixed(2)}`;
         progressBar.style.width = Math.min(inc > 0 ? (exp / inc) * 100 : (exp > 0 ? 100 : 0), 100) + '%'; 
 
-        // RENDER CATEGORY STATS
         const statsDiv = document.getElementById('category-stats');
         statsDiv.innerHTML = '<label style="margin-bottom:10px; display:block;">ALLOCATION DATA</label>';
         Object.keys(totalsByCategory).forEach(cat => {
@@ -249,45 +305,29 @@
         updateUI(filtered, label);
     }
 
-    // --- LEDGER & LEAK ANALYSIS EXPORT ---
     function exportToCSV() { 
-        // 1. Sort oldest to newest to calculate running balance correctly
         const sorted = [...transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
-
-        // 2. Setup Headers
         let csv = 'Date,Time,Description,Category,Received (Inflow),Used (Outflow),Running Balance\n';
         
-        let runningBalance = 0;
-        let totalIncome = 0;
-        let totalExpense = 0;
-        let categoryTotals = {};
+        let runningBalance = 0; let totalIncome = 0; let totalExpense = 0; let categoryTotals = {};
 
-        // 3. Process each transaction
         sorted.forEach(t => {
             const d = new Date(t.date);
             const dateStr = d.toLocaleDateString();
             const timeStr = d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
-            let income = '';
-            let expense = '';
+            let income = ''; let expense = '';
 
             if (t.amount > 0) {
-                income = t.amount;
-                totalIncome += income;
-                runningBalance += income;
+                income = t.amount; totalIncome += income; runningBalance += income;
             } else {
-                expense = Math.abs(t.amount);
-                totalExpense += expense;
-                runningBalance -= expense;
-                // Track leaks by category
+                expense = Math.abs(t.amount); totalExpense += expense; runningBalance -= expense;
                 categoryTotals[t.category] = (categoryTotals[t.category] || 0) + expense;
             }
 
-            // Append row to CSV
             csv += `"${dateStr}","${timeStr}","${t.text}","${t.category}","${income}","${expense}","${runningBalance.toFixed(2)}"\n`;
         });
 
-        // 4. Append Leak Analysis at the bottom
         csv += '\n,,,,,,\n';
         csv += '--- END OF LEDGER ---,,,,,,\n';
         csv += `TOTAL INFLOW,,,,,+${totalIncome.toFixed(2)},\n`;
@@ -297,14 +337,12 @@
         csv += '\n--- STRATEGIC LEAK ANALYSIS ---\n';
         csv += 'Category,Total Spent,% of Total Outflow\n';
         
-        // Sort categories by highest spend to lowest
         Object.keys(categoryTotals).sort((a, b) => categoryTotals[b] - categoryTotals[a]).forEach(cat => {
             const spent = categoryTotals[cat];
             const pct = totalExpense > 0 ? ((spent / totalExpense) * 100).toFixed(1) : 0;
             csv += `"${cat}",${spent.toFixed(2)},${pct}%\n`;
         });
 
-        // 5. Execute Download
         const a = document.createElement('a'); 
         a.href = window.URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); 
         a.download = `CASHFLOW_LEDGER_${new Date().toISOString().slice(0,10)}.csv`; 
