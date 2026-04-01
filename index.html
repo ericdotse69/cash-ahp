@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CASHFLOW</title>
+    <title>CASHFLOW SECURE</title>
     <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Cashflow%22,%22short_name%22:%22Cashflow%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22#0f172a%22,%22theme_color%22:%22#38bdf8%22}">
     <meta name="theme-color" content="#38bdf8">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #0f172a; --card-bg: #1e293b; --text: #f8fafc; --primary: #38bdf8; --income: #22c55e; --expense: #f43f5e; --border: #334155; }
         * { box-sizing: border-box; font-family: 'JetBrains Mono', monospace; }
-        body { background-color: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; }
+        body { background-color: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; transition: background 0.3s; }
         .container { width: 100%; max-width: 480px; position: relative; }
         .dashboard { background: var(--card-bg); padding: 25px; border: 2px solid var(--border); box-shadow: 8px 8px 0px rgba(0,0,0,0.3); margin-bottom: 25px; margin-top: 30px; }
         h2 { text-transform: uppercase; letter-spacing: 3px; border-bottom: 2px solid var(--primary); display: inline-block; padding-bottom: 5px; }
@@ -33,49 +33,37 @@
         .date-text { font-size: 0.65rem; color: #94a3b8; display: block; }
         .delete-btn { background: transparent; color: #475569; border: none; font-size: 18px; cursor: pointer; padding: 0 10px; }
         .status-badge { font-size: 0.7rem; padding: 4px 8px; background: #334155; color: var(--primary); display: inline-block; margin-bottom: 10px; }
-
-        /* CATEGORY CHART STYLING */
         .stats-container { background: rgba(0,0,0,0.2); border: 1px solid var(--border); padding: 15px; margin-top: 20px; }
         .stat-row { margin-bottom: 10px; }
         .stat-label { font-size: 0.7rem; display: flex; justify-content: space-between; margin-bottom: 4px; }
         .stat-bar-bg { background: #334155; height: 6px; width: 100%; }
         .stat-bar-fill { background: var(--primary); height: 100%; width: 0%; transition: 0.8s ease-out; }
-
-        /* SECURITY VAULT STYLING */
         #security-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .pin-box { background: var(--card-bg); padding: 30px; border: 2px solid var(--border); text-align: center; box-shadow: 8px 8px 0px rgba(0,0,0,0.5); width: 90%; max-width: 320px; }
         .pin-input { width: 100%; padding: 15px; margin: 20px 0; background: #000; border: 1px solid var(--primary); color: var(--primary); font-size: 24px; text-align: center; letter-spacing: 10px; outline: none; }
         #pin-error { color: var(--expense); font-size: 0.8rem; display: none; margin-bottom: 15px; font-weight: bold; }
-
-        /* BLACK BOX VAULT STYLING */
         .vault-container { background: #000; padding: 20px; border: 1px dashed var(--expense); margin-bottom: 20px; text-align: center; }
         .vault-title { color: #94a3b8; font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 15px; display: block; font-weight: bold; }
         .btn-vault { background: transparent; color: #eab308; border: 1px solid #eab308; padding: 12px; width: 48%; font-size: 0.7rem; cursor: pointer; transition: 0.3s; display: inline-block; }
-        .btn-vault:hover { background: rgba(234, 179, 8, 0.1); }
         .btn-vault-danger { color: var(--expense); border-color: var(--expense); width: 100%; margin-top: 15px; }
-        .btn-vault-danger:hover { background: rgba(244, 63, 94, 0.1); }
-
-        /* THEME: DAYLIGHT PROTOCOL */
         body.daylight { --bg: #e2e8f0; --card-bg: #ffffff; --text: #0f172a; --primary: #0284c7; --border: #cbd5e1; }
         body.daylight input, body.daylight select { background: #f8fafc; color: #0f172a; }
         body.daylight .progress-container, body.daylight .stat-bar-bg { background: #cbd5e1; }
         body.daylight .list li { background: #ffffff; }
-        body.daylight .status-badge { background: #e2e8f0; color: var(--primary); }
         body.daylight .vault-container { background: #f8fafc; }
         .theme-toggle { position: absolute; top: 0; right: 0; background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; cursor: pointer; font-size: 0.7rem; font-weight: bold; width: auto; letter-spacing: 1px; }
-        .theme-toggle:hover { background: var(--primary); color: var(--bg); }
     </style>
 </head>
 <body>
 
 <div id="security-screen">
     <div class="pin-box">
-        <h2 style="border-color: var(--expense); color: var(--expense);">SYSTEM LOCKED</h2>
-        <p style="font-size: 0.7rem; color: #94a3b8;">ENTER AUTHORIZATION CODE</p>
+        <h2 id="security-title" style="border-color: var(--expense); color: var(--expense);">SYSTEM LOCKED</h2>
+        <p id="security-subtitle" style="font-size: 0.7rem; color: #94a3b8;">AUTHORIZATION REQUIRED</p>
         <input type="password" id="pin-input" class="pin-input" maxlength="4" placeholder="****">
-        <p id="pin-error">ACCESS DENIED.</p>
-        <button class="btn-add" onclick="unlockSystem()">DECRYPT</button>
-    </div>
+        <p id="pin-error"></p>
+        <button id="security-action-btn" class="btn-add" onclick="handleSecurityAction()">DECRYPT</button>
+        </div>
 </div>
 
 <div class="container">
@@ -97,6 +85,7 @@
             <div><label>OUTFLOW</label><p id="money-minus" style="color:var(--expense); margin: 5px 0;">-$0.00</p></div>
         </div>
     </div>
+
     <form id="form">
         <div class="form-control"><label>Operation Name</label><input type="text" id="text" placeholder="Description" required></div>
         <div class="form-control"><label>Value</label><input type="number" id="amount" step="0.01" required></div>
@@ -121,7 +110,7 @@
         <label>SYSTEM VIEW RANGE</label>
         <select id="time-range" onchange="filterTransactions()" style="margin-bottom: 10px; border-color: var(--primary);">
             <option value="all">ALL-TIME RECORDS</option>
-            <option value="daily">SPECIFIC DAY (USE CALENDAR)</option>
+            <option value="daily">SPECIFIC DAY</option>
             <option value="weekly">LAST 7 DAYS</option>
             <option value="monthly">THIS MONTH</option>
             <option value="yearly">THIS YEAR</option>
@@ -138,218 +127,188 @@
             <button class="btn-vault" onclick="backupToVault()">SYNC SECURELY</button>
             <button class="btn-vault" onclick="restoreFromVault()">RESTORE DATA</button>
         </div>
-        <button class="btn-vault btn-vault-danger" onclick="wipeVault()">DESTROY BLACK BOX</button>
+        <button class="btn-vault btn-vault-danger" onclick="wipeVault()">FACTORY RESET SYSTEM</button>
     </div>
 </div>
 
 <script>
-    // --- OFFLINE SERVICE WORKER ---
+    // --- 1. SECURITY ENGINE ---
+    const Security = {
+        sanitize: (str) => {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML.toUpperCase();
+        },
+        hash: async (str) => {
+            const msgBuffer = new TextEncoder().encode(str);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+        },
+        canBio: () => window.PublicKeyCredential && window.isSecureContext
+    };
+
+    // --- 2. THEME & OFFLINE ---
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            const swCode = `const cacheName='cf-v1'; self.addEventListener('install',e=>e.waitUntil(caches.open(cacheName).then(c=>c.addAll([location.href])))); self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;
+            const swCode = `const cacheName='cf-v2'; self.addEventListener('install',e=>e.waitUntil(caches.open(cacheName).then(c=>c.addAll([location.href])))); self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;
             navigator.serviceWorker.register(URL.createObjectURL(new Blob([swCode], {type: 'text/javascript'})));
         });
     }
 
-    // --- SECURITY PROTOCOL ---
-    const SECRET_PIN = "0000"; 
-    function unlockSystem() {
-        const enteredPin = document.getElementById('pin-input').value;
-        if (enteredPin === SECRET_PIN) {
-            document.getElementById('security-screen').style.display = 'none';
-        } else {
-            document.getElementById('pin-error').style.display = 'block';
-            document.getElementById('pin-input').value = '';
-        }
-    }
-    document.getElementById('pin-input').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') unlockSystem();
-    });
-
-    // --- OPTICS PROTOCOL (THEME SWITCHER) ---
     let isDaylight = localStorage.getItem('theme') === 'daylight';
-    function applyTheme() {
-        const btn = document.getElementById('theme-btn');
-        if (isDaylight) {
-            document.body.classList.add('daylight');
-            btn.innerText = "OPTICS: DAY";
-        } else {
-            document.body.classList.remove('daylight');
-            btn.innerText = "OPTICS: NIGHT";
-        }
-    }
-    function toggleTheme() {
-        isDaylight = !isDaylight;
-        localStorage.setItem('theme', isDaylight ? 'daylight' : 'night');
-        applyTheme();
-    }
+    const applyTheme = () => {
+        document.body.classList.toggle('daylight', isDaylight);
+        document.getElementById('theme-btn').innerText = isDaylight ? "OPTICS: DAY" : "OPTICS: NIGHT";
+    };
+    const toggleTheme = () => { isDaylight = !isDaylight; localStorage.setItem('theme', isDaylight ? 'daylight' : 'night'); applyTheme(); };
     applyTheme();
 
-    // --- CORE LOGIC ---
-    const list = document.getElementById('list'), form = document.getElementById('form'), progressBar = document.getElementById('progress-bar'), viewIndicator = document.getElementById('view-indicator');
+    // --- 3. ACCESS CONTROL ---
+    let savedPinHash = localStorage.getItem('user_pin_hash');
+    const pinInput = document.getElementById('pin-input');
+    const pinError = document.getElementById('pin-error');
+
+    if (!savedPinHash) {
+        document.getElementById('security-title').innerText = "INITIALIZE VAULT";
+        document.getElementById('security-action-btn').innerText = "SET PIN";
+    }
+
+    async function handleSecurityAction() {
+        const pin = pinInput.value;
+        if (pin.length < 4) { showError("PIN MUST BE 4 DIGITS"); return; }
+        const hashed = await Security.hash(pin);
+
+        if (!savedPinHash) {
+            localStorage.setItem('user_pin_hash', hashed);
+            savedPinHash = hashed;
+            document.getElementById('security-screen').style.display = 'none';
+        } else if (hashed === savedPinHash) {
+            document.getElementById('security-screen').style.display = 'none';
+        } else {
+            showError("ACCESS DENIED");
+            pinInput.value = '';
+        }
+    }
+
+    function showError(m) { pinError.innerText = m; pinError.style.display = m ? 'block' : 'none'; }
+
+    if (Security.canBio()) {
+        const b = document.createElement('button');
+        b.innerText = "FINGERPRINT UNLOCK";
+        b.className = "btn-export"; b.style.marginTop = "10px";
+        b.onclick = async () => {
+            try {
+                const opt = { publicKey: { challenge: new Uint8Array(32), rp: { name: "Cashflow" }, user: { id: new Uint8Array(16), name: "u", displayName: "u" }, pubKeyCredParams: [{ alg: -7, type: "public-key" }], authenticatorSelection: { authenticatorAttachment: "platform" } } };
+                if (!localStorage.getItem('bio_set')) {
+                    await navigator.credentials.create(opt);
+                    localStorage.setItem('bio_set', 't');
+                } else {
+                    await navigator.credentials.get({ publicKey: { challenge: new Uint8Array(32) } });
+                }
+                document.getElementById('security-screen').style.display = 'none';
+            } catch (e) { showError("BIOMETRIC FAILED"); }
+        };
+        document.querySelector('.pin-box').appendChild(b);
+    }
+
+    // --- 4. CORE DATA LOGIC ---
     let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
     const catIcons = { "General": "📦", "Food": "🍔", "Salary": "💰", "Transport": "🚗", "Rent": "🏠", "Entertainment": "🎬", "Shopping": "🛍️" };
-    
-    function setNow() { const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); document.getElementById('date').value = now.toISOString().slice(0, 16); }
+
+    const setNow = () => { const n = new Date(); n.setMinutes(n.getMinutes() - n.getTimezoneOffset()); document.getElementById('date').value = n.toISOString().slice(0, 16); };
     setNow();
 
-    function setDailyMode() {
-        document.getElementById('time-range').value = 'daily';
-        filterTransactions();
+    function addTransaction(e) {
+        e.preventDefault();
+        transactions.push({
+            id: crypto.randomUUID(),
+            text: Security.sanitize(document.getElementById('text').value),
+            amount: document.getElementById('type').value === 'expense' ? -Math.abs(document.getElementById('amount').value) : Math.abs(document.getElementById('amount').value),
+            category: document.getElementById('category').value,
+            date: document.getElementById('date').value
+        });
+        document.getElementById('form').reset(); setNow(); filterTransactions();
     }
 
-    function addTransaction(e) { e.preventDefault(); transactions.push({ id: Date.now(), text: document.getElementById('text').value.toUpperCase(), amount: document.getElementById('type').value === 'expense' ? -Math.abs(document.getElementById('amount').value) : Math.abs(document.getElementById('amount').value), category: document.getElementById('category').value, date: document.getElementById('date').value }); form.reset(); setNow(); filterTransactions(); }
     function removeTransaction(id) { transactions = transactions.filter(t => t.id !== id); filterTransactions(); }
-    
-    function purgeSystem() { 
-        if (confirm("Purge Active Data? (Note: Vault data will remain safe).")) { 
-            transactions = []; 
-            localStorage.removeItem('transactions'); 
-            updateUI(); 
-        } 
-    }
-
-    // --- DEEP VAULT PROTOCOL (REDUNDANCY) ---
-    function backupToVault() {
-        if (transactions.length === 0) {
-            alert("SYSTEM ERROR: NO DATA TO SECURE.");
-            return;
-        }
-        localStorage.setItem('black_box_vault', JSON.stringify(transactions));
-        alert("SUCCESS: DATA SNAPSHOT SECURED IN DEEP VAULT.");
-    }
-
-    function restoreFromVault() {
-        const vaultData = localStorage.getItem('black_box_vault');
-        if (vaultData) {
-            if (confirm("OVERRIDE ACTIVE SCREEN WITH VAULT DATA?")) {
-                transactions = JSON.parse(vaultData);
-                updateUI();
-                alert("SYSTEM RESTORED FROM DEEP VAULT.");
-            }
-        } else {
-            alert("SYSTEM ERROR: DEEP VAULT IS EMPTY.");
-        }
-    }
-
-    function wipeVault() {
-        if (confirm("CRITICAL WARNING: DESTROY DEEP VAULT? This cannot be undone.")) {
-            localStorage.removeItem('black_box_vault');
-            alert("DEEP VAULT HAS BEEN WIPED.");
-        }
-    }
 
     function updateUI(filtered = transactions, label = "ALL-TIME") {
-        list.innerHTML = ''; let inc = 0, exp = 0; 
-        const totalsByCategory = {};
-        viewIndicator.innerText = `SYSTEM VIEW: ${label}`;
+        const list = document.getElementById('list');
+        list.innerHTML = ''; 
+        let inc = 0, exp = 0;
+        const catTotals = {};
+        document.getElementById('view-indicator').innerText = `SYSTEM VIEW: ${label}`;
 
         filtered.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(t => {
-            const item = document.createElement('li'); const d = new Date(t.date);
-            item.innerHTML = `<div class="details"><div class="icon-box">${catIcons[t.category]}</div><div><span class="date-text">${d.toLocaleDateString()}</span><strong>${t.text}</strong></div></div><div style="display:flex;align-items:center;"><span class="amt" style="color:${t.amount > 0 ? 'var(--income)' : 'var(--expense)'}">${t.amount > 0 ? '+' : ''}${Math.abs(t.amount).toFixed(2)}</span><button class="delete-btn" onclick="removeTransaction(${t.id})">×</button></div>`;
-            list.appendChild(item); 
-            
-            if(t.amount > 0) {
-                inc += t.amount;
-            } else {
-                exp += Math.abs(t.amount);
-                totalsByCategory[t.category] = (totalsByCategory[t.category] || 0) + Math.abs(t.amount);
-            }
+            const item = document.createElement('li');
+            item.innerHTML = `
+                <div class="details">
+                    <div class="icon-box">${catIcons[t.category] || '💰'}</div>
+                    <div><span class="date-text">${new Date(t.date).toLocaleDateString()}</span><strong class="desc-val"></strong></div>
+                </div>
+                <div style="display:flex;align-items:center;">
+                    <span class="amt" style="color:${t.amount > 0 ? 'var(--income)' : 'var(--expense)'}">${t.amount > 0 ? '+' : ''}${Math.abs(t.amount).toFixed(2)}</span>
+                    <button class="delete-btn" onclick="removeTransaction('${t.id}')">×</button>
+                </div>`;
+            item.querySelector('.desc-val').textContent = t.text; // XSS PROTECTION
+            list.appendChild(item);
+            if(t.amount > 0) inc += t.amount; else { exp += Math.abs(t.amount); catTotals[t.category] = (catTotals[t.category] || 0) + Math.abs(t.amount); }
         });
 
-        document.getElementById('balance').innerText = `$${(inc - exp).toFixed(2)}`; 
-        document.getElementById('money-plus').innerText = `+$${inc.toFixed(2)}`; 
+        document.getElementById('balance').innerText = `$${(inc - exp).toFixed(2)}`;
+        document.getElementById('money-plus').innerText = `+$${inc.toFixed(2)}`;
         document.getElementById('money-minus').innerText = `-$${exp.toFixed(2)}`;
-        progressBar.style.width = Math.min(inc > 0 ? (exp / inc) * 100 : (exp > 0 ? 100 : 0), 100) + '%'; 
+        document.getElementById('progress-bar').style.width = (inc > 0 ? (exp / inc) * 100 : (exp > 0 ? 100 : 0)) + '%';
 
         const statsDiv = document.getElementById('category-stats');
         statsDiv.innerHTML = '<label style="margin-bottom:10px; display:block;">ALLOCATION DATA</label>';
-        Object.keys(totalsByCategory).forEach(cat => {
-            const percentage = exp > 0 ? (totalsByCategory[cat] / exp) * 100 : 0;
-            statsDiv.innerHTML += `
-                <div class="stat-row">
-                    <div class="stat-label"><span>${catIcons[cat]} ${cat.toUpperCase()}</span> <span>${percentage.toFixed(0)}%</span></div>
-                    <div class="stat-bar-bg"><div class="stat-bar-fill" style="width: ${percentage}%"></div></div>
-                </div>`;
+        Object.keys(catTotals).forEach(c => {
+            const p = (catTotals[c] / exp) * 100;
+            statsDiv.innerHTML += `<div class="stat-row"><div class="stat-label"><span>${catIcons[c]} ${c.toUpperCase()}</span><span>${p.toFixed(0)}%</span></div><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${p}%"></div></div></div>`;
         });
-
         localStorage.setItem('transactions', JSON.stringify(transactions));
     }
 
+    // --- 5. FILTERS & EXPORT ---
     function filterTransactions() {
-        const range = document.getElementById('time-range').value;
-        const dailyDate = document.getElementById('filter-date').value;
+        const r = document.getElementById('time-range').value;
+        const d = document.getElementById('filter-date').value;
         const now = new Date();
-        let filtered = transactions;
-        let label = "ALL-TIME";
+        let f = transactions; let l = "ALL-TIME";
 
-        if (range === 'daily' && dailyDate) {
-            filtered = transactions.filter(t => t.date.startsWith(dailyDate));
-            label = "DAILY LOG";
-        } else if (range === 'weekly') {
-            const sevenDaysAgo = new Date();
-            sevenDaysAgo.setDate(now.getDate() - 7);
-            filtered = transactions.filter(t => new Date(t.date) >= sevenDaysAgo);
-            label = "WEEKLY SUMMARY";
-        } else if (range === 'monthly') {
-            filtered = transactions.filter(t => {
-                const d = new Date(t.date);
-                return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-            });
-            label = "MONTHLY SUMMARY";
-        } else if (range === 'yearly') {
-            filtered = transactions.filter(t => new Date(t.date).getFullYear() === now.getFullYear());
-            label = "YEARLY SUMMARY";
-        }
-
-        updateUI(filtered, label);
+        if (r === 'daily' && d) { f = transactions.filter(t => t.date.startsWith(d)); l = "DAILY LOG"; }
+        else if (r === 'weekly') { const week = new Date(); week.setDate(now.getDate()-7); f = transactions.filter(t => new Date(t.date) >= week); l = "WEEKLY"; }
+        else if (r === 'monthly') { f = transactions.filter(t => new Date(t.date).getMonth() === now.getMonth()); l = "MONTHLY"; }
+        else if (r === 'yearly') { f = transactions.filter(t => new Date(t.date).getFullYear() === now.getFullYear()); l = "YEARLY"; }
+        updateUI(f, l);
     }
 
-    function exportToCSV() { 
-        const sorted = [...transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
-        let csv = 'Date,Time,Description,Category,Received (Inflow),Used (Outflow),Running Balance\n';
-        
-        let runningBalance = 0; let totalIncome = 0; let totalExpense = 0; let categoryTotals = {};
+    function setDailyMode() { document.getElementById('time-range').value = 'daily'; filterTransactions(); }
 
-        sorted.forEach(t => {
-            const d = new Date(t.date);
-            const dateStr = d.toLocaleDateString();
-            const timeStr = d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-
-            let income = ''; let expense = '';
-
-            if (t.amount > 0) {
-                income = t.amount; totalIncome += income; runningBalance += income;
-            } else {
-                expense = Math.abs(t.amount); totalExpense += expense; runningBalance -= expense;
-                categoryTotals[t.category] = (categoryTotals[t.category] || 0) + expense;
-            }
-
-            csv += `"${dateStr}","${timeStr}","${t.text}","${t.category}","${income}","${expense}","${runningBalance.toFixed(2)}"\n`;
+    function exportToCSV() {
+        let csv = 'Date,Description,Category,Inflow,Outflow\n';
+        transactions.forEach(t => {
+            // Security: Strip commas to prevent CSV breakage
+            const desc = t.text.replace(/,/g, '');
+            csv += `${t.date},${desc},${t.category},${t.amount > 0 ? t.amount : ''},${t.amount < 0 ? Math.abs(t.amount) : ''}\n`;
         });
-
-        csv += '\n,,,,,,\n';
-        csv += '--- END OF LEDGER ---,,,,,,\n';
-        csv += `TOTAL INFLOW,,,,,+${totalIncome.toFixed(2)},\n`;
-        csv += `TOTAL OUTFLOW,,,,,$-${totalExpense.toFixed(2)},\n`;
-        csv += `FINAL BALANCE,,,,,${runningBalance.toFixed(2)}\n`;
-        
-        csv += '\n--- STRATEGIC LEAK ANALYSIS ---\n';
-        csv += 'Category,Total Spent,% of Total Outflow\n';
-        
-        Object.keys(categoryTotals).sort((a, b) => categoryTotals[b] - categoryTotals[a]).forEach(cat => {
-            const spent = categoryTotals[cat];
-            const pct = totalExpense > 0 ? ((spent / totalExpense) * 100).toFixed(1) : 0;
-            csv += `"${cat}",${spent.toFixed(2)},${pct}%\n`;
-        });
-
-        const a = document.createElement('a'); 
-        a.href = window.URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); 
-        a.download = `CASHFLOW_LEDGER_${new Date().toISOString().slice(0,10)}.csv`; 
-        a.click(); 
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'cashflow.csv'; a.click();
     }
 
-    form.addEventListener('submit', addTransaction); updateUI();
+    // --- 6. VAULT PROTOCOLS ---
+    function backupToVault() { localStorage.setItem('black_box_vault', JSON.stringify(transactions)); alert("SYNCED TO DEEP VAULT."); }
+    function restoreFromVault() { 
+        const v = localStorage.getItem('black_box_vault');
+        if (v && confirm("RESTORE FROM VAULT?")) { transactions = JSON.parse(v); updateUI(); }
+    }
+    function purgeSystem() { if (confirm("PURGE ACTIVE?")) { transactions = []; updateUI(); } }
+    function wipeVault() { if (confirm("WIPE EVERYTHING?")) { localStorage.clear(); location.reload(); } }
+
+    document.getElementById('form').addEventListener('submit', addTransaction);
+    pinInput.addEventListener('keypress', e => e.key === 'Enter' && handleSecurityAction());
+    updateUI();
 </script>
 </body>
 </html>
