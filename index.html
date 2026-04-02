@@ -2,330 +2,312 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CASHFLOW PLATINUM ULTIMATE</title>
-    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Cashflow%22,%22short_name%22:%22Cashflow%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22#0f172a%22,%22theme_color%22:%22#38bdf8%22}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CASHFLOW PLATINUM v17</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #0f172a; --card-bg: #1e293b; --text: #f8fafc; --primary: #38bdf8; --income: #22c55e; --expense: #f43f5e; --border: #334155; }
         * { box-sizing: border-box; font-family: 'JetBrains Mono', monospace; }
-        body { background-color: var(--bg); color: var(--text); padding: 20px; display: flex; justify-content: center; transition: 0.3s; }
+        body { background-color: var(--bg); color: var(--text); padding: 10px; display: flex; justify-content: center; transition: 0.3s; }
         body.daylight { --bg: #e2e8f0; --card-bg: #ffffff; --text: #0f172a; --primary: #0284c7; --border: #cbd5e1; }
-        
         .container { width: 100%; max-width: 480px; position: relative; }
-        .dashboard, form, .history-container, .vault-container { background: var(--card-bg); padding: 25px; border: 2px solid var(--border); box-shadow: 8px 8px 0px rgba(0,0,0,0.3); margin-bottom: 25px; }
         
-        h2 { text-transform: uppercase; letter-spacing: 3px; border-bottom: 2px solid var(--primary); display: inline-block; padding-bottom: 5px; }
-        .summary { display: flex; justify-content: space-between; margin-top: 20px; gap: 10px; }
-        .summary div { flex: 1; padding: 15px; border: 1px solid var(--border); background: rgba(0,0,0,0.1); }
+        .dashboard, form, .history-container, .vault-container, .ai-tools { 
+            background: var(--card-bg); padding: 20px; border: 2px solid var(--border); 
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.3); margin-bottom: 20px; 
+        }
         
-        /* CATEGORY STATS */
-        .stats-container { background: rgba(0,0,0,0.1); border: 1px solid var(--border); padding: 15px; margin-top: 20px; }
-        .stat-row { margin-bottom: 10px; }
-        .stat-label { font-size: 0.7rem; display: flex; justify-content: space-between; margin-bottom: 4px; }
-        .stat-bar-bg { background: #334155; height: 6px; width: 100%; }
-        .stat-bar-fill { background: var(--primary); height: 100%; width: 0%; transition: 0.8s ease-out; }
-
-        /* FORM & INPUTS */
-        .form-control { margin-bottom: 15px; }
-        label { font-size: 0.8rem; color: var(--primary); text-transform: uppercase; font-weight: bold; }
-        input, select { width: 100%; padding: 12px; margin-top: 5px; background: #0f172a; border: 1px solid var(--border); color: white; font-size: 14px; outline: none; }
-        body.daylight input, body.daylight select { background: #f8fafc; color: #0f172a; }
+        h2 { text-transform: uppercase; letter-spacing: 3px; border-bottom: 2px solid var(--primary); display: inline-block; padding-bottom: 5px; font-size: 1.1rem; margin-top: 10px; }
         
-        /* VIEWPORT & LIST */
-        .list-viewport { max-height: 380px; overflow-y: auto; margin-top: 15px; padding-right: 5px; border-top: 1px solid var(--border); }
-        .list-viewport::-webkit-scrollbar { width: 4px; }
-        .list-viewport::-webkit-scrollbar-thumb { background: var(--primary); }
-        .list { list-style: none; padding: 0; }
-        .list li { background: rgba(0,0,0,0.1); border: 1px solid var(--border); padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        /* SCANNER UI */
+        #scanner-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; flex-direction: column; align-items: center; justify-content: center; }
+        #viewfinder { width: 100%; height: 75%; object-fit: cover; border-top: 2px solid var(--primary); border-bottom: 2px solid var(--primary); }
+        
+        /* AI BUTTONS */
+        .btn-ai { flex: 1; background: #334155; color: var(--primary); border: 1px solid var(--primary); padding: 15px; font-size: 0.7rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-ai.active { background: var(--expense); color: white; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        /* PAGINATION */
-        .pagination { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); }
-        .page-btn { background: transparent; color: var(--primary); border: 1px solid var(--primary); padding: 8px; width: 30%; font-size: 0.7rem; cursor: pointer; }
-        .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        /* LIST & INPUTS */
+        .list-viewport { height: 280px; overflow-y: auto; margin-top: 15px; border: 1px solid var(--border); background: rgba(0,0,0,0.1); }
+        .list li { border-bottom: 1px solid var(--border); padding: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; }
+        input, select { width: 100%; padding: 12px; background: #0f172a; border: 1px solid var(--border); color: white; outline: none; margin-top: 5px; }
+        label { font-size: 0.7rem; color: var(--primary); text-transform: uppercase; font-weight: bold; }
 
-        /* BUTTONS */
         button { width: 100%; padding: 15px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
         .btn-add { background: var(--primary); color: #000; }
-        .btn-export { background: transparent; color: var(--primary); border: 1px solid var(--primary); margin-top: 10px; }
-        .btn-vault { background: transparent; color: #eab308; border: 1px solid #eab308; width: 48%; font-size: 0.7rem; }
-        .theme-toggle { position: absolute; top: 0; right: 0; background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 8px; width: auto; font-size: 0.7rem; }
+        .btn-vault { background: transparent; color: #eab308; border: 1px solid #eab308; width: 100%; font-size: 0.7rem; margin-top: 10px;}
 
-        /* SECURITY SCREEN */
+        /* SECURITY SCREEN (FIXED) */
         #security-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .pin-box { background: var(--card-bg); padding: 30px; border: 2px solid var(--border); text-align: center; width: 90%; max-width: 320px; box-shadow: 10px 10px 0px #000; }
-        .pin-input { width: 100%; padding: 15px; background: #000; border: 1px solid var(--primary); color: var(--primary); font-size: 24px; text-align: center; letter-spacing: 10px; margin-top: 20px; }
+        .pin-input { width: 100%; padding: 15px; background: #000; border: 1px solid var(--primary); color: var(--primary); font-size: 24px; text-align: center; letter-spacing: 10px; margin-bottom: 10px; }
+        #error-msg { color: var(--expense); font-size: 0.7rem; margin-top: 10px; font-weight: bold; display: none; }
     </style>
 </head>
 <body>
 
+<div id="scanner-container">
+    <video id="viewfinder" autoplay playsinline></video>
+    <div style="display:flex; gap:10px; padding:20px; width:100%;">
+        <button class="btn-add" onclick="captureAndProcess()">📸 CAPTURE LEDGER</button>
+        <button style="background:var(--expense); color:white; width:30%;" onclick="hideScanner()">X</button>
+    </div>
+    <p id="ocr-status" style="color:var(--primary); font-size:0.7rem; text-align: center;">ALIGN COLUMNS</p>
+</div>
+
 <div id="security-screen">
     <div class="pin-box">
-        <h2 style="color:var(--expense); border-color:var(--expense)">VAULT LOCKED</h2>
-        <p style="font-size: 0.7rem; color: #94a3b8; margin-top:10px">AES-256 KEY REQUIRED</p>
-        <input type="password" id="pin-input" class="pin-input" maxlength="4" placeholder="****">
-        <p id="pin-error" style="color:var(--expense); font-size:0.7rem; display:none; margin-top:10px"></p>
-        <button class="btn-add" style="margin-top:20px" onclick="handleSecurityAction()">DECRYPT SYSTEM</button>
-        <div id="bio-container"></div>
+        <h2 id="sec-title" style="color:var(--expense); border-color:var(--expense);">VAULT LOCKED</h2>
+        <p id="sec-hint" style="font-size: 0.6rem; color: #94a3b8; margin-bottom: 15px;">ENTER 4-DIGIT PIN</p>
+        <input type="password" id="pin-field" class="pin-input" maxlength="4" placeholder="****">
+        <button class="btn-add" onclick="authProcess()">DECRYPT VAULT</button>
+        <div id="bio-anchor"></div>
+        <p id="error-msg"></p>
+        <button onclick="clearSystem()" style="background:none; color: #475569; font-size: 0.5rem; margin-top: 30px; text-decoration: underline;">EMERGENCY: FACTORY RESET APP</button>
     </div>
 </div>
 
 <div class="container">
-    <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">OPTICS: NIGHT</button>
-    <h2>CASHFLOW</h2>
+    <h2>CASHFLOW PLATINUM</h2>
     
     <div class="dashboard">
-        <div id="view-indicator" style="font-size:0.7rem; color:var(--primary); margin-bottom:10px">SYSTEM VIEW: ALL-TIME</div>
-        <label>TOTAL ASSETS</label>
+        <label>AVAILABLE ASSETS</label>
         <h1 id="balance" style="font-size: 2.5rem; margin: 10px 0;">$0.00</h1>
-        
-        <div class="stats-container" id="category-stats">
-            <label>ALLOCATION DATA</label>
-        </div>
-
-        <div class="summary">
-            <div><label>INFLOW</label><p id="money-plus" style="color:var(--income); margin:5px 0;">+$0.00</p></div>
-            <div><label>OUTFLOW</label><p id="money-minus" style="color:var(--expense); margin:5px 0;">-$0.00</p></div>
+        <div class="summary" style="display:flex; gap:10px;">
+            <div style="flex:1; padding:10px; background:rgba(0,0,0,0.1); border:1px solid var(--border);"><label>INFLOW</label><p id="money-plus" style="color:var(--income)">+$0.00</p></div>
+            <div style="flex:1; padding:10px; background:rgba(0,0,0,0.1); border:1px solid var(--border);"><label>OUTFLOW</label><p id="money-minus" style="color:var(--expense)">-$0.00</p></div>
         </div>
     </div>
 
-    <form id="form">
-        <div class="form-control"><label>Operation Name</label><input type="text" id="text" required></div>
-        <div class="form-control"><label>Value</label><input type="number" id="amount" step="0.01" required></div>
-        <div class="form-control">
-            <label>Classification</label>
-            <select id="category">
-                <option value="General">📦 GENERAL</option>
-                <option value="Food">🍔 SUPPLY</option>
-                <option value="Salary">💰 REVENUE</option>
-                <option value="Transport">🚗 LOGISTICS</option>
-                <option value="Rent">🏠 INFRASTRUCTURE</option>
-                <option value="Entertainment">🎬 RECREATION</option>
-                <option value="Shopping">🛍️ ACQUISITION</option>
-            </select>
+    <div class="ai-tools">
+        <label>AI INPUT ASSISTANTS</label>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <button class="btn-ai" id="voice-btn" onclick="startVoiceAI()">🎙️ VOICE</button>
+            <button class="btn-ai" onclick="showScanner()">📷 SCANNER</button>
         </div>
-        <div class="form-control"><label>Timestamp</label><input type="datetime-local" id="date" required></div>
-        <div class="form-control"><label>Type</label><select id="type"><option value="expense">EXPENSE</option><option value="income">INCOME</option></select></div>
-        <button class="btn-add">Execute Record</button>
+    </div>
+
+    <form id="tx-form">
+        <div style="display:flex; gap:10px">
+            <div style="flex:2"><label>Operation</label><input type="text" id="tx-text" required></div>
+            <div style="flex:1"><label>Value</label><input type="number" id="tx-amt" step="0.01" required></div>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <select id="tx-cat" style="flex:1">
+                <option value="General">📦 General</option>
+                <option value="Food">🍔 Supply</option>
+                <option value="Salary">💰 Revenue</option>
+                <option value="Logistics">🚗 Logistics</option>
+            </select>
+            <select id="tx-type" style="flex:1"><option value="expense">Expense</option><option value="income">Income</option></select>
+        </div>
+        <input type="datetime-local" id="tx-date" required style="margin: 10px 0;">
+        <button class="btn-add">EXECUTE TRANSACTION</button>
     </form>
     
     <div class="history-container">
-        <label>SYSTEM VIEW RANGE</label>
-        <div style="display:flex; gap:10px; margin-bottom:10px">
-            <select id="time-range" onchange="resetToFirstPage()" style="flex:2">
-                <option value="all">ALL-TIME RECORDS</option>
-                <option value="daily">SPECIFIC DAY</option>
-                <option value="weekly">LAST 7 DAYS</option>
-                <option value="monthly">THIS MONTH</option>
-                <option value="yearly">THIS YEAR</option>
-            </select>
-            <input type="date" id="filter-date" onchange="resetToFirstPage()" style="flex:1">
+        <div class="list-viewport"><ul id="list-target" class="list"></ul></div>
+        <div style="display:flex; justify-content:space-between; margin-top:15px;">
+            <button style="background:transparent; border:1px solid var(--primary); color:var(--primary); font-size:0.7rem; width:48%;" onclick="exportData()">EXPORT CSV</button>
+            <button style="background:transparent; border:1px solid var(--expense); color:var(--expense); font-size:0.7rem; width:48%;" onclick="if(confirm('Purge?')){transactions=[];refreshUI();}">PURGE LOGS</button>
         </div>
-
-        <div class="list-viewport">
-            <ul id="list" class="list"></ul>
-        </div>
-
-        <div class="pagination">
-            <button id="prevPage" class="page-btn" onclick="changePage(-1)">PREV</button>
-            <span id="pageInfo" style="font-size:0.7rem">PAGE 1/1</span>
-            <button id="nextPage" class="page-btn" onclick="changePage(1)">NEXT</button>
-        </div>
-
-        <button class="btn-export" onclick="exportToCSV()">Export Data (CSV)</button>
     </div>
 
-    <div class="vault-container">
-        <span style="font-size:0.7rem; color:#94a3b8; display:block; text-align:center; margin-bottom:15px">DEEP VAULT PROTOCOLS</span>
-        <div style="display: flex; justify-content: space-between;">
-            <button class="btn-vault" onclick="backupToVault()">SYNC VAULT</button>
-            <button class="btn-vault" onclick="restoreFromVault()">RESTORE</button>
-        </div>
-        <button class="btn-vault" style="width:100%; margin-top:10px; color:var(--expense); border-color:var(--expense)" onclick="wipeAll()">FACTORY RESET</button>
+    <div class="vault-container" style="margin-bottom: 50px;">
+        <button class="btn-vault" style="color:var(--income); border-color:var(--income);" onclick="syncBioHardware()">🛡️ SYNC FINGERPRINT / FACEID</button>
+        <button class="btn-vault" style="color:var(--expense); border-color:var(--expense);" onclick="clearSystem()">FACTORY RESET DEVICE</button>
     </div>
 </div>
 
 <script>
-    // --- 1. THE CRYPTO ENGINE (AES-256) ---
-    const Crypto = {
+    // --- 1. CORE ENCRYPTION ---
+    const b2h = b => [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
+    const h2b = h => new Uint8Array(h.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+    
+    const AES_ENGINE = {
         async getKey(pin) {
-            const salt = new TextEncoder().encode('cashflow-salt-master-v4');
-            const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(pin), 'PBKDF2', false, ['deriveKey']);
-            return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' }, key, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+            let salt = localStorage.getItem('omni_v17_salt') || b2h(crypto.getRandomValues(new Uint8Array(16)));
+            localStorage.setItem('omni_v17_salt', salt);
+            const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pin), 'PBKDF2', false, ['deriveKey']);
+            return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: h2b(salt), iterations: 100000, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
         },
         async encrypt(data, pin) {
-            const key = await this.getKey(pin);
-            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const key = await this.getKey(pin); const iv = crypto.getRandomValues(new Uint8Array(12));
             const enc = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(JSON.stringify(data)));
-            return { iv: Array.from(iv), data: Array.from(new Uint8Array(enc)) };
+            return { iv: b2h(iv), data: b2h(enc) };
         },
-        async decrypt(enc, pin) {
+        async decrypt(obj, pin) {
             try {
                 const key = await this.getKey(pin);
-                const dec = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: new Uint8Array(enc.iv) }, key, new Uint8Array(enc.data));
+                const dec = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: h2b(obj.iv) }, key, h2b(obj.data));
                 return JSON.parse(new TextDecoder().decode(dec));
-            } catch (e) { return null; }
+            } catch(e) { return null; }
         }
     };
 
     // --- 2. GLOBAL STATE ---
-    let transactions = [];
-    let sessionPin = "";
-    let currentPage = 1;
-    const itemsPerPage = 7;
-    const catIcons = { "General": "📦", "Food": "🍔", "Salary": "💰", "Transport": "🚗", "Rent": "🏠", "Entertainment": "🎬", "Shopping": "🛍️" };
+    let transactions = []; let sessionPin = "";
+    const isNew = !localStorage.getItem('omni_v17_hash');
+    
+    if(isNew) {
+        document.getElementById('sec-title').innerText = "DEVICE SETUP";
+        document.getElementById('sec-title').style.color = "var(--primary)";
+        document.getElementById('sec-hint').innerText = "CREATE A NEW 4-DIGIT PIN";
+    }
 
-    // --- 3. ACCESS CONTROL (WITH LOGIC BYPASS FIX) ---
-    async function handleSecurityAction(pinFromBio = null) {
-        const pinInput = document.getElementById('pin-input');
-        const pin = pinFromBio || pinInput.value;
-        const stored = localStorage.getItem('vault_blob');
-        const errorMsg = document.getElementById('pin-error');
+    // --- 3. SECURITY FLOW (FIXED) ---
+    async function authProcess(bioPin = null) {
+        const pinField = document.getElementById('pin-field');
+        const pin = bioPin || pinField.value;
+        const errMsg = document.getElementById('error-msg');
+        
+        if(!pin || pin.length !== 4) { alert("PIN must be 4 digits"); return; }
 
-        // SECURITY ENFORCEMENT: No empty PINs, Must be 4 digits
-        if (!pin || pin.length !== 4) {
-            errorMsg.innerText = "ACCESS DENIED: PIN MUST BE 4 DIGITS.";
-            errorMsg.style.display = 'block';
-            return; 
-        }
-
-        if (!stored) {
-            // INITIAL SETUP MODE
-            if (confirm("SET '" + pin + "' AS YOUR MASTER VAULT PIN?")) {
-                sessionPin = pin;
-                localStorage.setItem('bio_key_stored', pin); 
-                document.getElementById('security-screen').style.display='none';
-                updateUI();
-            }
+        if(isNew) {
+            // First time setup
+            localStorage.setItem('omni_v17_hash', b2h(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pin))));
+            sessionPin = pin;
+            enterApp([]);
         } else {
-            // DECRYPTION MODE
-            const dec = await Crypto.decrypt(JSON.parse(stored), pin);
-            if (dec) {
+            // Unlock existing
+            const vaultData = localStorage.getItem('omni_v17_vault');
+            if(!vaultData) { enterApp([]); return; } // Empty vault but has PIN
+            
+            const dec = await AES_ENGINE.decrypt(JSON.parse(vaultData), pin);
+            if(dec) {
                 sessionPin = pin;
                 transactions = dec;
-                localStorage.setItem('bio_key_stored', pin); 
-                document.getElementById('security-screen').style.display='none';
-                updateUI();
+                enterApp(dec);
             } else {
-                pinInput.value = '';
-                errorMsg.innerText = "AES-256 DECRYPTION FAILED. WRONG KEY.";
-                errorMsg.style.display = 'block';
+                pinField.value = "";
+                errMsg.innerText = "INVALID PIN. ACCESS DENIED.";
+                errMsg.style.display = "block";
             }
         }
+    }
+
+    function enterApp(data) {
+        document.getElementById('security-screen').style.display = 'none';
+        refreshUI();
     }
 
     // Biometric Logic
-    if (window.PublicKeyCredential && window.isSecureContext) {
+    if (window.PublicKeyCredential && !isNew) {
         const b = document.createElement('button');
-        b.innerText = "FINGERPRINT UNLOCK"; b.className = "btn-export"; b.style.marginTop = "10px";
+        b.innerText = "FINGERPRINT UNLOCK"; b.className = "btn-add"; b.style.marginTop = "15px";
         b.onclick = async () => {
             try {
-                await navigator.credentials.get({ publicKey: { challenge: new Uint8Array(32) } });
-                const savedKey = localStorage.getItem('bio_key_stored');
-                if (savedKey) handleSecurityAction(savedKey);
-                else alert("LOGIN WITH PIN ONCE TO ENABLE BIOMETRICS.");
+                await navigator.credentials.get({ publicKey: { challenge: new Uint8Array(32), userVerification: "required" } });
+                const savedKey = localStorage.getItem('omni_v17_bio');
+                if(savedKey) authProcess(savedKey);
+                else alert("Log in with PIN first to link hardware.");
             } catch (e) {}
         };
-        document.getElementById('bio-container').appendChild(b);
+        document.getElementById('bio-anchor').appendChild(b);
     }
 
-    // --- 4. THEME & UI PROTOCOLS ---
-    let isDaylight = localStorage.getItem('theme') === 'daylight';
-    const applyTheme = () => {
-        document.body.classList.toggle('daylight', isDaylight);
-        document.getElementById('theme-btn').innerText = isDaylight ? "OPTICS: DAY" : "OPTICS: NIGHT";
-    };
-    const toggleTheme = () => { isDaylight = !isDaylight; localStorage.setItem('theme', isDaylight ? 'daylight' : 'night'); applyTheme(); };
-    applyTheme();
+    async function syncBioHardware() {
+        if(!sessionPin) return;
+        try {
+            const challenge = crypto.getRandomValues(new Uint8Array(32));
+            await navigator.credentials.create({
+                publicKey: { challenge, rp: { name: "Cashflow" }, user: { id: new Uint8Array(16), name: "User", displayName: "User" },
+                pubKeyCredParams: [{ type: "public-key", alg: -7 }], authenticatorSelection: { userVerification: "required" } }
+            });
+            localStorage.setItem('omni_v17_bio', sessionPin);
+            alert("HARDWARE SYNCED SUCCESSFULLY.");
+        } catch (e) { alert("HTTPS Required for Biometrics."); }
+    }
 
-    // --- 5. DATA RENDERER (ALL FEATURES) ---
-    function updateUI() {
-        const range = document.getElementById('time-range').value;
-        const fDate = document.getElementById('filter-date').value;
-        const now = new Date();
+    // --- 4. CAMERA & OCR ---
+    let camStream = null;
+    async function showScanner() {
+        try {
+            camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            document.getElementById('viewfinder').srcObject = camStream;
+            document.getElementById('scanner-container').style.display = 'flex';
+        } catch (e) { alert("Camera Error"); }
+    }
+    function hideScanner() { if(camStream) camStream.getTracks().forEach(t => t.stop()); document.getElementById('scanner-container').style.display = 'none'; }
+    
+    async function captureAndProcess() {
+        const vid = document.getElementById('viewfinder');
+        const can = document.createElement('canvas');
+        can.width = vid.videoWidth; can.height = vid.videoHeight;
+        can.getContext('2d').drawImage(vid, 0, 0);
         
-        // Filter logic
-        let filtered = [...transactions].sort((a,b) => new Date(b.date) - new Date(a.date));
-        if (range === 'daily' && fDate) filtered = filtered.filter(t => t.date.startsWith(fDate));
-        else if (range === 'weekly') filtered = filtered.filter(t => (now - new Date(t.date)) < 7*24*60*60*1000);
-        else if (range === 'monthly') filtered = filtered.filter(t => new Date(t.date).getMonth() === now.getMonth());
-        else if (range === 'yearly') filtered = filtered.filter(t => new Date(t.date).getFullYear() === now.getFullYear());
-
-        // Calculate Totals & Category Stats
-        let inc = 0, exp = 0; const catTotals = {};
-        filtered.forEach(t => {
-            if (t.amount > 0) inc += t.amount;
-            else { exp += Math.abs(t.amount); catTotals[t.category] = (catTotals[t.category] || 0) + Math.abs(t.amount); }
+        document.getElementById('ocr-status').innerText = "AI ANALYZING...";
+        const { data: { text } } = await Tesseract.recognize(can.toDataURL('image/jpeg'), 'eng');
+        
+        text.split('\n').forEach(line => {
+            const dateM = line.match(/(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/);
+            const amtM = line.match(/(\d+[\.,]\d{2})|(\d{2,5})/);
+            if(amtM) {
+                transactions.push({
+                    id: crypto.randomUUID(),
+                    text: "SCAN: " + (line.substring(0,10).trim() || "RECORD"),
+                    amount: -Math.abs(parseFloat(amtM[0].replace(',','.'))),
+                    category: "General",
+                    date: dateM ? dateM[0] : new Date().toISOString().split('T')[0]
+                });
+            }
         });
+        hideScanner(); refreshUI();
+    }
 
-        document.getElementById('balance').innerText = `$${(inc - exp).toFixed(2)}`;
-        document.getElementById('money-plus').innerText = `+$${inc.toFixed(2)}`;
-        document.getElementById('money-minus').innerText = `-$${exp.toFixed(2)}`;
+    // --- 5. VOICE ---
+    function startVoiceAI() {
+        const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if(!Rec) return alert("Not supported");
+        const rec = new Rec();
+        const btn = document.getElementById('voice-btn');
+        btn.classList.add('active');
+        rec.onresult = (e) => {
+            const t = e.results[0][0].transcript.toLowerCase();
+            const v = t.match(/\d+/);
+            if(v) document.getElementById('tx-amt').value = v[0];
+            document.getElementById('tx-text').value = t.replace(v, '').trim().toUpperCase();
+            btn.classList.remove('active');
+        };
+        rec.start();
+    }
 
-        const statsDiv = document.getElementById('category-stats');
-        statsDiv.innerHTML = '<label>ALLOCATION DATA</label>';
-        Object.keys(catTotals).forEach(c => {
-            const p = (catTotals[c] / exp) * 100;
-            statsDiv.innerHTML += `<div class="stat-row"><div class="stat-label"><span>${catIcons[c]} ${c}</span><span>${p.toFixed(0)}%</span></div><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${p}%"></div></div></div>`;
-        });
-
-        // Pagination Renderer
-        const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
-        const pageData = filtered.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
-        const list = document.getElementById('list');
-        list.innerHTML = '';
-        pageData.forEach(t => {
+    // --- 6. UI ENGINE ---
+    function refreshUI() {
+        const list = document.getElementById('list-target'); list.innerHTML = '';
+        let bal = 0; let inc = 0; let exp = 0;
+        transactions.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(t => {
+            const a = parseFloat(t.amount); bal += a;
+            if(a > 0) inc += a; else exp += Math.abs(a);
             const li = document.createElement('li');
-            li.innerHTML = `<div class="details"><span class="date-text">${t.date.replace('T',' ')}</span><strong>${t.text}</strong></div>
-                            <div style="display:flex;align-items:center"><span style="color:${t.amount > 0 ? 'var(--income)' : 'var(--expense)'}">${t.amount.toFixed(2)}</span>
-                            <button onclick="removeTransaction('${t.id}')" style="background:none; color:#475569; width:auto; padding:0 10px">×</button></div>`;
+            li.innerHTML = `<div><span style="font-size:0.5rem;display:block;color:#94a3b8">${t.date.split('T')[0]}</span><strong>${t.text}</strong></div>
+                            <span style="color:${a > 0 ? 'var(--income)' : 'var(--expense)'}">${a.toFixed(2)}</span>`;
             list.appendChild(li);
         });
-
-        document.getElementById('pageInfo').innerText = `PAGE ${currentPage}/${totalPages}`;
-        document.getElementById('prevPage').disabled = currentPage === 1;
-        document.getElementById('nextPage').disabled = currentPage === totalPages || filtered.length === 0;
-        
-        saveToDisk();
+        document.getElementById('balance').innerText = `$${bal.toFixed(2)}`;
+        document.getElementById('money-plus').innerText = `+$${inc.toFixed(2)}`;
+        document.getElementById('money-minus').innerText = `-$${exp.toFixed(2)}`;
+        if(sessionPin) AES_ENGINE.encrypt(transactions, sessionPin).then(enc => localStorage.setItem('omni_v17_vault', JSON.stringify(enc)));
     }
 
-    const resetToFirstPage = () => { currentPage = 1; updateUI(); };
-    const changePage = (d) => { currentPage += d; updateUI(); };
-    
-    async function saveToDisk() {
-        if (sessionPin) {
-            const enc = await Crypto.encrypt(transactions, sessionPin);
-            localStorage.setItem('vault_blob', JSON.stringify(enc));
-        }
-    }
-
-    function removeTransaction(id) { transactions = transactions.filter(t => t.id !== id); updateUI(); }
-
-    document.getElementById('form').onsubmit = (e) => {
+    document.getElementById('tx-form').onsubmit = (e) => {
         e.preventDefault();
-        const div = document.createElement('div'); div.textContent = document.getElementById('text').value; // XSS Sanitizer
-        transactions.push({
-            id: crypto.randomUUID(),
-            text: div.innerHTML.toUpperCase(),
-            amount: document.getElementById('type').value === 'expense' ? -Math.abs(document.getElementById('amount').value) : Math.abs(document.getElementById('amount').value),
-            category: document.getElementById('category').value,
-            date: document.getElementById('date').value
-        });
-        document.getElementById('form').reset(); resetToFirstPage();
+        transactions.push({ id: crypto.randomUUID(), text: document.getElementById('tx-text').value.toUpperCase(),
+            amount: document.getElementById('tx-amt').value * (document.getElementById('tx-type').value === 'income' ? 1 : -1),
+            category: document.getElementById('tx-cat').value, date: document.getElementById('tx-date').value });
+        document.getElementById('tx-form').reset(); syncTime(); refreshUI();
     };
 
-    function exportToCSV() {
-        let csv = 'Date,Description,Category,Value\n';
-        transactions.forEach(t => csv += `${t.date},${t.text.replace(/,/g,'')},${t.category},${t.amount}\n`);
-        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='cashflow_export.csv'; a.click();
+    function clearSystem() { if(confirm("NUKE ALL DATA AND RESET PIN?")) { localStorage.clear(); location.reload(); } }
+    function exportData() {
+        let csv = 'Date,Desc,Amt\n'; transactions.forEach(t => csv += `${t.date},${t.text},${t.amount}\n`);
+        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='cashflow.csv'; a.click();
     }
 
-    const backupToVault = () => { localStorage.setItem('deep_vault', localStorage.getItem('vault_blob')); alert("ENCRYPTED SYNC SUCCESS."); };
-    const restoreFromVault = () => { if(confirm("RESTORE FROM DEEP VAULT?")) { localStorage.setItem('vault_blob', localStorage.getItem('deep_vault')); location.reload(); } };
-    const wipeAll = () => { if(confirm("CRITICAL: WIPE EVERYTHING?")) { localStorage.clear(); location.reload(); } };
-
-    const n = new Date(); n.setMinutes(n.setMinutes() - n.getTimezoneOffset());
-    document.getElementById('date').value = n.toISOString().slice(0, 16);
+    const syncTime = () => { const n = new Date(); n.setMinutes(n.getMinutes() - n.getTimezoneOffset()); document.getElementById('tx-date').value = n.toISOString().slice(0, 16); };
+    syncTime();
 </script>
 </body>
 </html>
