@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CASHFLOW PLATINUM v17</title>
+    <title>CASH</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -11,8 +11,10 @@
         * { box-sizing: border-box; font-family: 'JetBrains Mono', monospace; }
         body { background-color: var(--bg); color: var(--text); padding: 10px; display: flex; justify-content: center; transition: 0.3s; }
         body.daylight { --bg: #e2e8f0; --card-bg: #ffffff; --text: #0f172a; --primary: #0284c7; --border: #cbd5e1; }
+        
         .container { width: 100%; max-width: 480px; position: relative; }
         
+        /* BOX ARCHITECTURE */
         .dashboard, form, .history-container, .vault-container, .ai-tools { 
             background: var(--card-bg); padding: 20px; border: 2px solid var(--border); 
             box-shadow: 4px 4px 0px rgba(0,0,0,0.3); margin-bottom: 20px; 
@@ -20,30 +22,43 @@
         
         h2 { text-transform: uppercase; letter-spacing: 3px; border-bottom: 2px solid var(--primary); display: inline-block; padding-bottom: 5px; font-size: 1.1rem; margin-top: 10px; }
         
-        /* SCANNER UI */
+        /* LIVE SCANNER VIEWPORT */
         #scanner-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; flex-direction: column; align-items: center; justify-content: center; }
         #viewfinder { width: 100%; height: 75%; object-fit: cover; border-top: 2px solid var(--primary); border-bottom: 2px solid var(--primary); }
         
-        /* AI BUTTONS */
-        .btn-ai { flex: 1; background: #334155; color: var(--primary); border: 1px solid var(--primary); padding: 15px; font-size: 0.7rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        /* DASHBOARD & STATS */
+        .summary { display: flex; justify-content: space-between; margin-top: 15px; gap: 10px; }
+        .summary div { flex: 1; padding: 10px; border: 1px solid var(--border); background: rgba(0,0,0,0.1); }
+        .stats-container { margin-top: 15px; padding: 10px; border: 1px dashed var(--border); }
+        .stat-row { margin-bottom: 10px; }
+        .stat-label { font-size: 0.65rem; display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .stat-bar-bg { background: #334155; height: 6px; width: 100%; border-radius: 3px; }
+        .stat-bar-fill { background: var(--primary); height: 100%; border-radius: 3px; transition: 1s ease-out; }
+
+        /* AI TOOL BUTTONS */
+        .ai-btn-row { display: flex; gap: 8px; margin-top: 10px; }
+        .btn-ai { flex: 1; background: #334155; color: var(--primary); border: 1px solid var(--primary); padding: 15px; font-size: 0.7rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
         .btn-ai.active { background: var(--expense); color: white; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        /* LIST & INPUTS */
+        /* LIST VIEWPORT */
         .list-viewport { height: 280px; overflow-y: auto; margin-top: 15px; border: 1px solid var(--border); background: rgba(0,0,0,0.1); }
         .list li { border-bottom: 1px solid var(--border); padding: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; }
-        input, select { width: 100%; padding: 12px; background: #0f172a; border: 1px solid var(--border); color: white; outline: none; margin-top: 5px; }
+        
+        /* FORM INPUTS */
+        input, select { width: 100%; padding: 12px; background: #0f172a; border: 1px solid var(--border); color: white; outline: none; margin-top: 5px; font-size: 14px; }
+        body.daylight input, body.daylight select { background: #f8fafc; color: #0f172a; }
         label { font-size: 0.7rem; color: var(--primary); text-transform: uppercase; font-weight: bold; }
 
-        button { width: 100%; padding: 15px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
+        button { width: 100%; padding: 15px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; font-size: 0.8rem; }
         .btn-add { background: var(--primary); color: #000; }
         .btn-vault { background: transparent; color: #eab308; border: 1px solid #eab308; width: 100%; font-size: 0.7rem; margin-top: 10px;}
 
-        /* SECURITY SCREEN (FIXED) */
+        /* SECURITY OVERLAY */
         #security-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .pin-box { background: var(--card-bg); padding: 30px; border: 2px solid var(--border); text-align: center; width: 90%; max-width: 320px; box-shadow: 10px 10px 0px #000; }
-        .pin-input { width: 100%; padding: 15px; background: #000; border: 1px solid var(--primary); color: var(--primary); font-size: 24px; text-align: center; letter-spacing: 10px; margin-bottom: 10px; }
-        #error-msg { color: var(--expense); font-size: 0.7rem; margin-top: 10px; font-weight: bold; display: none; }
+        .pin-input { width: 100%; padding: 15px; background: #000; border: 1px solid var(--primary); color: var(--primary); font-size: 28px; text-align: center; letter-spacing: 12px; margin-bottom: 15px; }
+        #sec-err { color: var(--expense); font-size: 0.7rem; margin-top: 10px; display: none; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -51,263 +66,252 @@
 <div id="scanner-container">
     <video id="viewfinder" autoplay playsinline></video>
     <div style="display:flex; gap:10px; padding:20px; width:100%;">
-        <button class="btn-add" onclick="captureAndProcess()">📸 CAPTURE LEDGER</button>
-        <button style="background:var(--expense); color:white; width:30%;" onclick="hideScanner()">X</button>
+        <button class="btn-add" onclick="processCapture()">📸 CAPTURE</button>
+        <button style="background:var(--expense); color:white; width:30%;" onclick="stopScanner()">CANCEL</button>
     </div>
-    <p id="ocr-status" style="color:var(--primary); font-size:0.7rem; text-align: center;">ALIGN COLUMNS</p>
+    <p id="ocr-status" style="color:var(--primary); font-size:0.7rem; text-align: center;">DETECTION MODE: ACTIVE</p>
 </div>
 
 <div id="security-screen">
     <div class="pin-box">
         <h2 id="sec-title" style="color:var(--expense); border-color:var(--expense);">VAULT LOCKED</h2>
-        <p id="sec-hint" style="font-size: 0.6rem; color: #94a3b8; margin-bottom: 15px;">ENTER 4-DIGIT PIN</p>
-        <input type="password" id="pin-field" class="pin-input" maxlength="4" placeholder="****">
-        <button class="btn-add" onclick="authProcess()">DECRYPT VAULT</button>
-        <div id="bio-anchor"></div>
-        <p id="error-msg"></p>
-        <button onclick="clearSystem()" style="background:none; color: #475569; font-size: 0.5rem; margin-top: 30px; text-decoration: underline;">EMERGENCY: FACTORY RESET APP</button>
+        <p id="sec-hint" style="font-size: 0.6rem; color: #94a3b8; margin-bottom: 15px;">AUTHENTICATION REQUIRED</p>
+        <input type="password" id="pin-field" class="pin-input" maxlength="4" placeholder="****" inputmode="numeric">
+        <button class="btn-add" onclick="initUnlock()">UNLOCK</button>
+        <p id="sec-err">ACCESS DENIED</p>
+        <button onclick="factoryReset()" style="background:none; color: #475569; font-size: 0.5rem; margin-top: 30px; text-decoration: underline;">EMERGENCY FACTORY RESET</button>
     </div>
 </div>
 
 <div class="container">
-    <h2>CASHFLOW PLATINUM</h2>
+    <button onclick="document.body.classList.toggle('daylight')" style="position:absolute; top:0; right:0; background:transparent; color:var(--primary); border:1px solid var(--primary); width:auto; font-size:0.6rem; padding:5px;">OPTICS</button>
+    <h2>CASH</h2>
     
     <div class="dashboard">
-        <label>AVAILABLE ASSETS</label>
+        <label>NET LIQUIDITY</label>
         <h1 id="balance" style="font-size: 2.5rem; margin: 10px 0;">$0.00</h1>
-        <div class="summary" style="display:flex; gap:10px;">
-            <div style="flex:1; padding:10px; background:rgba(0,0,0,0.1); border:1px solid var(--border);"><label>INFLOW</label><p id="money-plus" style="color:var(--income)">+$0.00</p></div>
-            <div style="flex:1; padding:10px; background:rgba(0,0,0,0.1); border:1px solid var(--border);"><label>OUTFLOW</label><p id="money-minus" style="color:var(--expense)">-$0.00</p></div>
+        
+        <div id="stats-area" class="stats-container">
+            <label>ALLOCATION METRICS</label>
+            <div id="category-bars"></div>
+        </div>
+
+        <div class="summary">
+            <div><label>INFLOW</label><p id="sum-in" style="color:var(--income)">+$0.00</p></div>
+            <div><label>OUTFLOW</label><p id="sum-out" style="color:var(--expense)">-$0.00</p></div>
         </div>
     </div>
 
     <div class="ai-tools">
-        <label>AI INPUT ASSISTANTS</label>
-        <div style="display:flex; gap:10px; margin-top:10px;">
-            <button class="btn-ai" id="voice-btn" onclick="startVoiceAI()">🎙️ VOICE</button>
-            <button class="btn-ai" onclick="showScanner()">📷 SCANNER</button>
+        <label>ASSISTANTS</label>
+        <div class="ai-btn-row">
+            <button class="btn-ai" id="voice-btn" onclick="runVoiceAI()">🎙️ VOICE</button>
+            <button class="btn-ai" onclick="runScannerAI()">📷 SCANNER</button>
+            <button class="btn-ai" style="background:var(--primary); color:#000" onclick="runPasteAI()">📋 PASTE</button>
         </div>
     </div>
 
-    <form id="tx-form">
+    <form id="ledger-form">
         <div style="display:flex; gap:10px">
-            <div style="flex:2"><label>Operation</label><input type="text" id="tx-text" required></div>
-            <div style="flex:1"><label>Value</label><input type="number" id="tx-amt" step="0.01" required></div>
+            <div style="flex:2"><label>Operation</label><input type="text" id="inp-text" required placeholder="REFERENCE"></div>
+            <div style="flex:1"><label>Value</label><input type="number" id="inp-amt" step="0.01" required placeholder="0.00"></div>
         </div>
         <div style="display:flex; gap:10px; margin-top:10px;">
-            <select id="tx-cat" style="flex:1">
-                <option value="General">📦 General</option>
-                <option value="Food">🍔 Supply</option>
-                <option value="Salary">💰 Revenue</option>
-                <option value="Logistics">🚗 Logistics</option>
-            </select>
-            <select id="tx-type" style="flex:1"><option value="expense">Expense</option><option value="income">Income</option></select>
+            <div style="flex:1">
+                <label>Category</label>
+                <select id="inp-cat">
+                    <option value="General">📦 General</option>
+                    <option value="Food">🍔 Supply</option>
+                    <option value="Salary">💰 Revenue</option>
+                    <option value="Logistics">🚗 Logistics</option>
+                </select>
+            </div>
+            <div style="flex:1">
+                <label>Nature</label>
+                <select id="inp-type"><option value="expense">EXPENSE</option><option value="income">INCOME</option></select>
+            </div>
         </div>
-        <input type="datetime-local" id="tx-date" required style="margin: 10px 0;">
+        <input type="datetime-local" id="inp-date" required style="margin: 10px 0;">
         <button class="btn-add">EXECUTE TRANSACTION</button>
     </form>
     
     <div class="history-container">
-        <div class="list-viewport"><ul id="list-target" class="list"></ul></div>
+        <div class="list-viewport"><ul id="tx-list" class="list"></ul></div>
         <div style="display:flex; justify-content:space-between; margin-top:15px;">
-            <button style="background:transparent; border:1px solid var(--primary); color:var(--primary); font-size:0.7rem; width:48%;" onclick="exportData()">EXPORT CSV</button>
-            <button style="background:transparent; border:1px solid var(--expense); color:var(--expense); font-size:0.7rem; width:48%;" onclick="if(confirm('Purge?')){transactions=[];refreshUI();}">PURGE LOGS</button>
+            <button style="background:transparent; border:1px solid var(--primary); color:var(--primary); font-size:0.7rem; width:48%;" onclick="downloadCSV()">DOWNLOAD CSV</button>
+            <button style="background:transparent; border:1px solid var(--expense); color:var(--expense); font-size:0.7rem; width:48%;" onclick="purgeHistory()">PURGE LEDGER</button>
         </div>
     </div>
 
-    <div class="vault-container" style="margin-bottom: 50px;">
-        <button class="btn-vault" style="color:var(--income); border-color:var(--income);" onclick="syncBioHardware()">🛡️ SYNC FINGERPRINT / FACEID</button>
-        <button class="btn-vault" style="color:var(--expense); border-color:var(--expense);" onclick="clearSystem()">FACTORY RESET DEVICE</button>
+    <div class="vault-container" style="margin-bottom: 60px;">
+        <button class="btn-vault" style="color:var(--expense); border-color:var(--expense);" onclick="factoryReset()">FACTORY RESET DEVICE</button>
     </div>
 </div>
 
 <script>
-    // --- 1. CORE ENCRYPTION ---
-    const b2h = b => [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
-    const h2b = h => new Uint8Array(h.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+    // --- 1. AES-256 ENCRYPTION CORE ---
+    const hex = b => [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
+    const buf = h => new Uint8Array(h.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
     
-    const AES_ENGINE = {
-        async getKey(pin) {
-            let salt = localStorage.getItem('omni_v17_salt') || b2h(crypto.getRandomValues(new Uint8Array(16)));
-            localStorage.setItem('omni_v17_salt', salt);
+    const CRYPTO_CORE = {
+        async derive(pin) {
+            let salt = localStorage.getItem('cp_v20_salt') || hex(crypto.getRandomValues(new Uint8Array(16)));
+            localStorage.setItem('cp_v20_salt', salt);
             const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pin), 'PBKDF2', false, ['deriveKey']);
-            return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: h2b(salt), iterations: 100000, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+            return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: buf(salt), iterations: 100000, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
         },
-        async encrypt(data, pin) {
-            const key = await this.getKey(pin); const iv = crypto.getRandomValues(new Uint8Array(12));
+        async lock(data, pin) {
+            const key = await this.derive(pin); const iv = crypto.getRandomValues(new Uint8Array(12));
             const enc = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(JSON.stringify(data)));
-            return { iv: b2h(iv), data: b2h(enc) };
+            return { iv: hex(iv), data: hex(enc) };
         },
-        async decrypt(obj, pin) {
+        async unlock(obj, pin) {
             try {
-                const key = await this.getKey(pin);
-                const dec = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: h2b(obj.iv) }, key, h2b(obj.data));
+                const key = await this.derive(pin);
+                const dec = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: buf(obj.iv) }, key, buf(obj.data));
                 return JSON.parse(new TextDecoder().decode(dec));
             } catch(e) { return null; }
         }
     };
 
-    // --- 2. GLOBAL STATE ---
+    // --- 2. APPLICATION STATE ---
     let transactions = []; let sessionPin = "";
-    const isNew = !localStorage.getItem('omni_v17_hash');
-    
-    if(isNew) {
-        document.getElementById('sec-title').innerText = "DEVICE SETUP";
-        document.getElementById('sec-title').style.color = "var(--primary)";
-        document.getElementById('sec-hint').innerText = "CREATE A NEW 4-DIGIT PIN";
-    }
+    const isNewSetup = !localStorage.getItem('cp_v20_hash');
+    if(isNewSetup) { document.getElementById('sec-title').innerText = "DEVICE SETUP"; document.getElementById('sec-title').style.color = "var(--primary)"; }
 
-    // --- 3. SECURITY FLOW (FIXED) ---
-    async function authProcess(bioPin = null) {
+    // --- 3. SECURITY FLOW ---
+    async function initUnlock() {
         const pinField = document.getElementById('pin-field');
-        const pin = bioPin || pinField.value;
-        const errMsg = document.getElementById('error-msg');
+        const pin = pinField.value;
+        const err = document.getElementById('sec-err');
         
-        if(!pin || pin.length !== 4) { alert("PIN must be 4 digits"); return; }
+        if(!pin || pin.length !== 4) return;
 
-        if(isNew) {
-            // First time setup
-            localStorage.setItem('omni_v17_hash', b2h(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pin))));
-            sessionPin = pin;
-            enterApp([]);
+        if(isNewSetup) {
+            localStorage.setItem('cp_v20_hash', hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pin))));
+            sessionPin = pin; finalizeUnlock();
         } else {
-            // Unlock existing
-            const vaultData = localStorage.getItem('omni_v17_vault');
-            if(!vaultData) { enterApp([]); return; } // Empty vault but has PIN
-            
-            const dec = await AES_ENGINE.decrypt(JSON.parse(vaultData), pin);
-            if(dec) {
-                sessionPin = pin;
-                transactions = dec;
-                enterApp(dec);
-            } else {
-                pinField.value = "";
-                errMsg.innerText = "INVALID PIN. ACCESS DENIED.";
-                errMsg.style.display = "block";
-            }
+            const stored = localStorage.getItem('cp_v20_vault');
+            if(!stored) { sessionPin = pin; finalizeUnlock(); return; }
+            const dec = await CRYPTO_CORE.unlock(JSON.parse(stored), pin);
+            if(dec) { sessionPin = pin; transactions = dec; finalizeUnlock(); }
+            else { pinField.value = ""; err.style.display = "block"; }
         }
     }
 
-    function enterApp(data) {
-        document.getElementById('security-screen').style.display = 'none';
-        refreshUI();
-    }
+    function finalizeUnlock() { document.getElementById('security-screen').style.display = 'none'; syncUI(); }
 
-    // Biometric Logic
-    if (window.PublicKeyCredential && !isNew) {
-        const b = document.createElement('button');
-        b.innerText = "FINGERPRINT UNLOCK"; b.className = "btn-add"; b.style.marginTop = "15px";
-        b.onclick = async () => {
-            try {
-                await navigator.credentials.get({ publicKey: { challenge: new Uint8Array(32), userVerification: "required" } });
-                const savedKey = localStorage.getItem('omni_v17_bio');
-                if(savedKey) authProcess(savedKey);
-                else alert("Log in with PIN first to link hardware.");
-            } catch (e) {}
-        };
-        document.getElementById('bio-anchor').appendChild(b);
-    }
+    // --- 4. MOMO PASTE ASSISTANT ---
+    async function runPasteAI() {
+        const sms = prompt("PASTE MOBILE MONEY ALERT:");
+        if(!sms) return;
 
-    async function syncBioHardware() {
-        if(!sessionPin) return;
-        try {
-            const challenge = crypto.getRandomValues(new Uint8Array(32));
-            await navigator.credentials.create({
-                publicKey: { challenge, rp: { name: "Cashflow" }, user: { id: new Uint8Array(16), name: "User", displayName: "User" },
-                pubKeyCredParams: [{ type: "public-key", alg: -7 }], authenticatorSelection: { userVerification: "required" } }
+        const amtMatch = sms.match(/(?:GHS|GHC|AMT:)\s?([0-9,]+\.[0-9]{2})/i);
+        const amount = amtMatch ? parseFloat(amtMatch[1].replace(',', '')) : 0;
+        const refMatch = sms.match(/Reference:\s?([^.]+)/i);
+        const autoRef = refMatch ? refMatch[1].trim() : "MOMO TRANSFER";
+        const isIncome = (sms.toLowerCase().includes("received") || sms.toLowerCase().includes("cash-in") || sms.toLowerCase().includes("deposit"));
+
+        if(amount > 0) {
+            const userRef = prompt(`DETECTED: GHS ${amount}\nREFERENCE: "${autoRef}"\n\nEnter new reference or hit OK to save:`, autoRef);
+            transactions.push({
+                id: crypto.randomUUID(),
+                text: "MOMO: " + (userRef || autoRef).toUpperCase(),
+                amount: isIncome ? amount : -Math.abs(amount),
+                category: "General",
+                date: new Date().toISOString().slice(0, 16)
             });
-            localStorage.setItem('omni_v17_bio', sessionPin);
-            alert("HARDWARE SYNCED SUCCESSFULLY.");
-        } catch (e) { alert("HTTPS Required for Biometrics."); }
+            syncUI();
+        } else { alert("LOGIC ERROR: NO AMOUNT DETECTED."); }
     }
 
-    // --- 4. CAMERA & OCR ---
-    let camStream = null;
-    async function showScanner() {
+    // --- 5. LIVE SCANNER & VOICE AI ---
+    let stream = null;
+    async function runScannerAI() {
         try {
-            camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-            document.getElementById('viewfinder').srcObject = camStream;
+            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+            document.getElementById('viewfinder').srcObject = stream;
             document.getElementById('scanner-container').style.display = 'flex';
-        } catch (e) { alert("Camera Error"); }
+        } catch (e) { alert("Camera Permission Required."); }
     }
-    function hideScanner() { if(camStream) camStream.getTracks().forEach(t => t.stop()); document.getElementById('scanner-container').style.display = 'none'; }
+    function stopScanner() { if(stream) stream.getTracks().forEach(t => t.stop()); document.getElementById('scanner-container').style.display = 'none'; }
     
-    async function captureAndProcess() {
+    async function processCapture() {
         const vid = document.getElementById('viewfinder');
         const can = document.createElement('canvas');
         can.width = vid.videoWidth; can.height = vid.videoHeight;
         can.getContext('2d').drawImage(vid, 0, 0);
-        
-        document.getElementById('ocr-status').innerText = "AI ANALYZING...";
+        document.getElementById('ocr-status').innerText = "AI SCANNING...";
         const { data: { text } } = await Tesseract.recognize(can.toDataURL('image/jpeg'), 'eng');
-        
         text.split('\n').forEach(line => {
-            const dateM = line.match(/(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/);
-            const amtM = line.match(/(\d+[\.,]\d{2})|(\d{2,5})/);
-            if(amtM) {
-                transactions.push({
-                    id: crypto.randomUUID(),
-                    text: "SCAN: " + (line.substring(0,10).trim() || "RECORD"),
-                    amount: -Math.abs(parseFloat(amtM[0].replace(',','.'))),
-                    category: "General",
-                    date: dateM ? dateM[0] : new Date().toISOString().split('T')[0]
-                });
+            const m = line.match(/(\d+[\.,]\d{2})|(\d{2,5})/);
+            if(m) {
+                transactions.push({ id: crypto.randomUUID(), text: "SCAN: " + line.substring(0,10), amount: -Math.abs(parseFloat(m[0].replace(',','.'))), category: "General", date: new Date().toISOString().split('T')[0] });
             }
         });
-        hideScanner(); refreshUI();
+        stopScanner(); syncUI();
     }
 
-    // --- 5. VOICE ---
-    function startVoiceAI() {
+    function runVoiceAI() {
         const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if(!Rec) return alert("Not supported");
-        const rec = new Rec();
-        const btn = document.getElementById('voice-btn');
+        if(!Rec) return alert("Voice unsupported.");
+        const rec = new Rec(); const btn = document.getElementById('voice-btn');
         btn.classList.add('active');
         rec.onresult = (e) => {
             const t = e.results[0][0].transcript.toLowerCase();
             const v = t.match(/\d+/);
-            if(v) document.getElementById('tx-amt').value = v[0];
-            document.getElementById('tx-text').value = t.replace(v, '').trim().toUpperCase();
+            if(v) document.getElementById('inp-amt').value = v[0];
+            document.getElementById('inp-text').value = t.replace(v, '').trim().toUpperCase();
             btn.classList.remove('active');
         };
         rec.start();
     }
 
-    // --- 6. UI ENGINE ---
-    function refreshUI() {
-        const list = document.getElementById('list-target'); list.innerHTML = '';
-        let bal = 0; let inc = 0; let exp = 0;
+    // --- 6. UI RENDER ENGINE (STATS RESTORED) ---
+    function syncUI() {
+        const list = document.getElementById('tx-list'); list.innerHTML = '';
+        const barTarget = document.getElementById('category-bars'); barTarget.innerHTML = '';
+        let bal = 0, inc = 0, exp = 0; const catMap = {};
+
         transactions.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(t => {
-            const a = parseFloat(t.amount); bal += a;
-            if(a > 0) inc += a; else exp += Math.abs(a);
+            const v = parseFloat(t.amount); bal += v;
+            if(v > 0) inc += v; 
+            else { exp += Math.abs(v); catMap[t.category] = (catMap[t.category] || 0) + Math.abs(v); }
+            
             const li = document.createElement('li');
             li.innerHTML = `<div><span style="font-size:0.5rem;display:block;color:#94a3b8">${t.date.split('T')[0]}</span><strong>${t.text}</strong></div>
-                            <span style="color:${a > 0 ? 'var(--income)' : 'var(--expense)'}">${a.toFixed(2)}</span>`;
+                            <span style="color:${v > 0 ? 'var(--income)' : 'var(--expense)'}">${v.toFixed(2)}</span>`;
             list.appendChild(li);
         });
+
+        Object.keys(catMap).forEach(c => {
+            const p = (catMap[c] / exp) * 100;
+            barTarget.innerHTML += `<div class="stat-row"><div class="stat-label"><span>${c}</span><span>${p.toFixed(0)}%</span></div><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${p}%"></div></div></div>`;
+        });
+
         document.getElementById('balance').innerText = `$${bal.toFixed(2)}`;
-        document.getElementById('money-plus').innerText = `+$${inc.toFixed(2)}`;
-        document.getElementById('money-minus').innerText = `-$${exp.toFixed(2)}`;
-        if(sessionPin) AES_ENGINE.encrypt(transactions, sessionPin).then(enc => localStorage.setItem('omni_v17_vault', JSON.stringify(enc)));
+        document.getElementById('sum-in').innerText = `+$${inc.toFixed(2)}`;
+        document.getElementById('sum-out').innerText = `-$${exp.toFixed(2)}`;
+        
+        if(sessionPin) CRYPTO_CORE.lock(transactions, sessionPin).then(enc => localStorage.setItem('cp_v20_vault', JSON.stringify(enc)));
     }
 
-    document.getElementById('tx-form').onsubmit = (e) => {
+    document.getElementById('ledger-form').onsubmit = (e) => {
         e.preventDefault();
-        transactions.push({ id: crypto.randomUUID(), text: document.getElementById('tx-text').value.toUpperCase(),
-            amount: document.getElementById('tx-amt').value * (document.getElementById('tx-type').value === 'income' ? 1 : -1),
-            category: document.getElementById('tx-cat').value, date: document.getElementById('tx-date').value });
-        document.getElementById('tx-form').reset(); syncTime(); refreshUI();
+        transactions.push({ id: crypto.randomUUID(), text: document.getElementById('inp-text').value.toUpperCase(),
+            amount: document.getElementById('inp-amt').value * (document.getElementById('inp-type').value === 'income' ? 1 : -1),
+            category: document.getElementById('inp-cat').value, date: document.getElementById('inp-date').value });
+        document.getElementById('ledger-form').reset(); refreshTime(); syncUI();
     };
 
-    function clearSystem() { if(confirm("NUKE ALL DATA AND RESET PIN?")) { localStorage.clear(); location.reload(); } }
-    function exportData() {
+    function factoryReset() { if(confirm("NUKE ALL DATA?")) { localStorage.clear(); location.reload(); } }
+    function purgeHistory() { if(confirm("PURGE LEDGER?")) { transactions = []; syncUI(); } }
+    function downloadCSV() {
         let csv = 'Date,Desc,Amt\n'; transactions.forEach(t => csv += `${t.date},${t.text},${t.amount}\n`);
-        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='cashflow.csv'; a.click();
+        const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='cash_platinum.csv'; a.click();
     }
-
-    const syncTime = () => { const n = new Date(); n.setMinutes(n.getMinutes() - n.getTimezoneOffset()); document.getElementById('tx-date').value = n.toISOString().slice(0, 16); };
-    syncTime();
+    const refreshTime = () => { const n = new Date(); n.setMinutes(n.getMinutes() - n.getTimezoneOffset()); document.getElementById('inp-date').value = n.toISOString().slice(0, 16); };
+    refreshTime();
 </script>
 </body>
 </html>
