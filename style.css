@@ -1,0 +1,52 @@
+:root { --bg: #0f172a; --card-bg: #1e293b; --text: #f8fafc; --primary: #38bdf8; --income: #22c55e; --expense: #f43f5e; --border: #334155; }
+* { box-sizing: border-box; font-family: 'JetBrains Mono', monospace; }
+body { background-color: var(--bg); color: var(--text); padding: 10px; display: flex; justify-content: center; transition: 0.3s; }
+body.daylight { --bg: #e2e8f0; --card-bg: #ffffff; --text: #0f172a; --primary: #0284c7; --border: #cbd5e1; }
+
+.container { width: 100%; max-width: 480px; position: relative; }
+
+/* BOX ARCHITECTURE */
+.dashboard, form, .history-container, .vault-container, .ai-tools { 
+    background: var(--card-bg); padding: 20px; border: 2px solid var(--border); 
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.3); margin-bottom: 20px; 
+}
+
+h2 { text-transform: uppercase; letter-spacing: 3px; border-bottom: 2px solid var(--primary); display: inline-block; padding-bottom: 5px; font-size: 1.1rem; margin-top: 10px; }
+
+/* LIVE SCANNER VIEWPORT */
+#scanner-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10000; flex-direction: column; align-items: center; justify-content: center; }
+#viewfinder { width: 100%; height: 75%; object-fit: cover; border-top: 2px solid var(--primary); border-bottom: 2px solid var(--primary); }
+
+/* DASHBOARD & STATS */
+.summary { display: flex; justify-content: space-between; margin-top: 15px; gap: 10px; }
+.summary div { flex: 1; padding: 10px; border: 1px solid var(--border); background: rgba(0,0,0,0.1); }
+.stats-container { margin-top: 15px; padding: 10px; border: 1px dashed var(--border); }
+.stat-row { margin-bottom: 10px; }
+.stat-label { font-size: 0.65rem; display: flex; justify-content: space-between; margin-bottom: 4px; }
+.stat-bar-bg { background: #334155; height: 6px; width: 100%; border-radius: 3px; }
+.stat-bar-fill { background: var(--primary); height: 100%; border-radius: 3px; transition: 1s ease-out; }
+
+/* SPECIAL BUTTONS */
+.ai-btn-row { display: flex; gap: 8px; margin-top: 10px; }
+.btn-ai { flex: 1; background: #334155; color: var(--primary); border: 1px solid var(--primary); padding: 15px; font-size: 0.7rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+.btn-ai.active { background: var(--expense); color: white; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+/* LIST VIEWPORT */
+.list-viewport { height: 280px; overflow-y: auto; margin-top: 15px; border: 1px solid var(--border); background: rgba(0,0,0,0.1); }
+.list li { border-bottom: 1px solid var(--border); padding: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; }
+
+/* FORM INPUTS */
+input, select { width: 100%; padding: 12px; background: #0f172a; border: 1px solid var(--border); color: white; outline: none; margin-top: 5px; font-size: 14px; }
+body.daylight input, body.daylight select { background: #f8fafc; color: #0f172a; }
+label { font-size: 0.7rem; color: var(--primary); text-transform: uppercase; font-weight: bold; }
+
+button { width: 100%; padding: 15px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.3s; font-size: 0.8rem; }
+.btn-add { background: var(--primary); color: #000; }
+.btn-vault { background: transparent; color: #eab308; border: 1px solid #eab308; width: 100%; font-size: 0.7rem; margin-top: 10px;}
+
+/* SECURITY OVERLAY */
+#security-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.pin-box { background: var(--card-bg); padding: 30px; border: 2px solid var(--border); text-align: center; width: 90%; max-width: 320px; box-shadow: 10px 10px 0px #000; }
+.pin-input { width: 100%; padding: 15px; background: #000; border: 1px solid var(--primary); color: var(--primary); font-size: 28px; text-align: center; letter-spacing: 12px; margin-bottom: 15px; }
+#sec-err { color: var(--expense); font-size: 0.7rem; margin-top: 10px; display: none; font-weight: bold; }
